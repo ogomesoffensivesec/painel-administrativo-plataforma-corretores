@@ -2,8 +2,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/auth.context";
-import useAuth from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { DataProvider } from "@/contexts/data.context";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -21,7 +20,7 @@ export default function RootLayout({ children }) {
         <main>
           <AuthProvider>
             <DataProvider>
-
+              <SpeedInsights />
               {children}
             </DataProvider>
 
