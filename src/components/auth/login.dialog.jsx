@@ -7,22 +7,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useAuth from "@/hooks/useAuth";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
-import GoogleIcon from "../../assets/google.png";
-import Image from "next/image";
 import { toast } from "../ui/use-toast";
 
-function LoginDialog() {
+function LoginDialog({ open }) {
   const { register, handleSubmit, reset } = useForm();
-  const [authError, setAuthError] = useState(null);
-  const { signIn, loading, signInGoogle } = useAuth();
+  const { signIn, loading } = useAuth();
 
   const onSubmit = async (data, e) => {
     e.preventDefault();
@@ -39,14 +34,14 @@ function LoginDialog() {
 
       reset();
     } catch (error) {
-      setAuthError(error.message);
+      console.log(error.message);
     }
   };
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Dialog open={open}>
+      {/* <DialogTrigger asChild>
         <Button>Entrar na plataforma</Button>
-      </DialogTrigger>
+      </DialogTrigger> */}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Acesse agora mesmo!</DialogTitle>
@@ -77,23 +72,7 @@ function LoginDialog() {
               {...register("password")}
             />
           </div>
-          <div className="w-full flex justify-end items-center gap-4 my-4">
-            <DialogClose
-              className="text-sm text-right text-blue-500 cursor-pointer flex justify-center gap-2 "
-              onClick={signInGoogle}
-            >
-              <Image src={GoogleIcon} alt="google" width={18} />
-              Entrar com Google
-            </DialogClose>
-            {/* <span>ou</span>
-            <DialogClose
-              className="text-sm text-right text-blue-500 cursor-pointer flex justify-center gap-2 "
-              onClick={signInGoogle}
-            >
-              <Image src={GoogleIcon} alt="google" width={18} />
-              Entrar com Apple
-            </DialogClose> */}
-          </div>
+
           <DialogFooter>
             <div className="flex w-full justify-end gap-3">
               <DialogClose>
