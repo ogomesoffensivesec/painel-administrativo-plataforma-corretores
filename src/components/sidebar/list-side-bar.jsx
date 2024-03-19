@@ -76,13 +76,6 @@ function ListSideBar({ userFake }) {
       selected: segment === "visitas" ? true : false,
       href: "/dashboard/visitas",
     },
-    {
-      text: "Negociações",
-      icon: <Handshake className="w-6 h-6" />,
-      selected: segment === "negociacoes" ? true : false,
-
-      href: "/dashboard/negociacoes",
-    },
   ];
   return (
     <>
