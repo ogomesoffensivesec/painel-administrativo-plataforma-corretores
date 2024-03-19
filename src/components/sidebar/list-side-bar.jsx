@@ -92,14 +92,12 @@ function ListSideBar({ userFake }) {
           <div className=" w-full h-44 flex flex-col justify-center items-center border-b-[1px] border-solid border-zinc-300 dark:border-stone-700 transition-all duration-500">
             <Image
               src={user.photoUrl ? user.photoUrl : userFake.avatar}
-              alt={user.name}
               width={96}
               height={96}
               className="rounded-full shadow object-contain"
             />
             <div className="flex gap-1 justify-center w-full mt-4 text-stone-900 dark:text-stone-300">
-              <span>Olá, </span>
-              <span>{user.name}</span>
+              <span>Olá, comercial </span>
             </div>
           </div>
           <ul className="w-full h-full flex flex-col items-center pt-8 flex-1">
