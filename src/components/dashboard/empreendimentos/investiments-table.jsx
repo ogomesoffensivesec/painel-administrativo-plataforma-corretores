@@ -131,7 +131,10 @@ function TabelaInvestimentos() {
           />
         </>
       )}
-      {!investiments && <span>0 empreendimentos encontrados</span>}
+      {!investiments ||
+        (investiments.length === 0 && (
+          <span>0 empreendimentos encontrados</span>
+        ))}
     </div>
   );
 }

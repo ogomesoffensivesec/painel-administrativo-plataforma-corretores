@@ -169,7 +169,7 @@ export function AuthProvider({ children }) {
     updateProfile(auth.currentUser, {
       displayName: name
     }).then(() => {
-      console.log('profile alterado');
+
       handleUser(auth.currentUser)
     }).catch((error) => {
       // An error occurred

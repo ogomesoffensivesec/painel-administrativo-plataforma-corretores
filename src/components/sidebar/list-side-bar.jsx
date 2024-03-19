@@ -9,6 +9,8 @@ import {
   Handshake,
   HomeIcon,
   LogOut,
+  PersonStanding,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -69,7 +71,13 @@ function ListSideBar({ userFake }) {
 
       href: "/dashboard/empreendimentos",
     },
+    {
+      text: "Corretores",
+      icon: <Users className="w-6 h-6" />,
+      selected: segment === "corretores" ? true : false,
 
+      href: "/dashboard/corretores",
+    },
     {
       text: "Visitas",
       icon: <CalendarCheck className="w-6 h-6" />,

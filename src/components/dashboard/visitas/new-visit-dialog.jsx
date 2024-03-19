@@ -20,6 +20,7 @@ import useData from "@/hooks/useData";
 import { getVisits, scheduleVisit } from "./visitas-data";
 import useUsers from "@/hooks/useUsers";
 import { useQueryClient } from "react-query";
+import { v4 } from "uuid";
 
 function NewVisitDialog() {
   const [realStates, setRealStates] = useState([]);
@@ -62,7 +63,8 @@ function NewVisitDialog() {
     }
 
     if (available) {
-      await scheduleVisit(data);
+      const visitId = v4();
+      await scheduleVisit(visitId, data);
       queryClient.invalidateQueries({ queryKey: ["visits"] });
 
       reset();
@@ -155,7 +157,7 @@ function NewVisitDialog() {
                   >
                     <option value="">Selecione...</option>
                     {Object.values(users).map((user) => (
-                      <option key={user.uid} value={JSON.stringify(user)}>
+                      <option key={user.uid} value={user.uid}>
                         {user.name}
                       </option>
                     ))}

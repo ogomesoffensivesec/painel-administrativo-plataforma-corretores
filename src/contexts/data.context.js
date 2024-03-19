@@ -71,7 +71,7 @@ export function DataProvider({ children }) {
   }
 
   async function uploadImages(images, empreendimentoId, modeloId) {
-    console.log(images);
+
     const uploadTasks = Object.values(images).map(async (image) => {
       const imageId = v4();
       const referenciaImagem = storageRef(storage, `/empreendimentos/${empreendimentoId}/modelos/${modeloId}/imagens/${imageId}`);
@@ -107,12 +107,14 @@ export function DataProvider({ children }) {
 
   async function getInvestiments(name, type, status) {
     const referenciaDatabase = ref(database, '/empreendimentos');
-    console.log('Procurando...');
+    let investments = [];
 
     const snapshot = await fetchInvestments(referenciaDatabase);
-    let investments = [];
+    if (!snapshot.exists()) {
+      return investments
+    }
     if (snapshot.exists()) {
-      console.log('Achei! ');
+
       // setTimeout(() => {
       //   console.clear()
       // }, 2000)
@@ -130,14 +132,13 @@ export function DataProvider({ children }) {
         );
       }
     }
-
     return investments;
   }
 
   async function excluirEmpreendimento() {
     const idEmpreendimento = empreendimento.id;
     try {
-      console.log(`ID: ${idEmpreendimento}`);
+
       const referenciaDatabase = ref(database, `/empreendimentos/${idEmpreendimento}`);
       const referenciaStorage = storageRef(storage, `/empreendimentos/${idEmpreendimento}`);
       await remove(referenciaDatabase);
@@ -145,7 +146,8 @@ export function DataProvider({ children }) {
       await listAll(referenciaStorage).then(async (res) => {
         await Promise.all(res.items.map(async (itemRef) => {
           await deleteObject(itemRef);
-          console.log('Arquivo excluído');
+
+
         }));
       });
 

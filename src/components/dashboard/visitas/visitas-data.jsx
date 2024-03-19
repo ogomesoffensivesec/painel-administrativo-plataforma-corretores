@@ -62,7 +62,7 @@ export async function getVisits(
   return visits;
 }
 
-export async function scheduleVisit(data) {
+export async function scheduleVisit(visitId, data) {
   try {
     const {
       realState,
@@ -72,8 +72,7 @@ export async function scheduleVisit(data) {
       corretor,
     } = data;
     const realStateJSON = JSON.parse(realState);
-    const corretorJSON = JSON.parse(corretor);
-    const visitId = v4();
+
     const scheduledDate = `${scheduled_day}/${scheduled_month}/2024`;
     const createdAt = new Date().toISOString();
     const visit = {
@@ -82,7 +81,7 @@ export async function scheduleVisit(data) {
       scheduled_hour,
       status: "Aguardando retirada de chaves",
       id: visitId,
-      corretor: corretorJSON,
+      corretor: corretor,
       createdAt: createdAt,
     };
 
