@@ -6,14 +6,9 @@ import useAuth from "@/hooks/useAuth";
 import {
   ArrowLeftRight,
   CalendarCheck,
-  FilePlus,
-  Files,
   Handshake,
   HomeIcon,
   LogOut,
-  Settings2,
-  UserCheckIcon,
-  Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -75,13 +70,6 @@ function ListSideBar({ userFake }) {
       href: "/dashboard/empreendimentos",
     },
 
-    // {
-    //   text: "Meus Clientes",
-    //   icon: <Users className="w-6 h-6" />,
-    //   selected: segment === "meus-clientes" ? true : false,
-    //   href: "/dashboard/meus-clientes",
-    // },
-
     {
       text: "Visitas",
       icon: <CalendarCheck className="w-6 h-6" />,
@@ -95,13 +83,6 @@ function ListSideBar({ userFake }) {
 
       href: "/dashboard/negociacoes",
     },
-
-    // {
-    //   text: "Configurações",
-    //   icon: <Settings2 className="w-6 h-6" />,
-    //   selected: segment === "settings" ? true : false,
-    //   href: "/dashboard/settings",
-    // },
   ];
   return (
     <>
