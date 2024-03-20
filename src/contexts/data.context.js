@@ -37,7 +37,7 @@ export function DataProvider({ children }) {
           setEmpreendimento(emp);
         });
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     };
 
@@ -65,7 +65,7 @@ export function DataProvider({ children }) {
         variant: "success",
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast({
         title: "Erro ao cadastrar empreendimento!",
         description: "Revise os dados e tente novamente.",
@@ -90,8 +90,6 @@ export function DataProvider({ children }) {
 
   async function uploadImages(images, empreendimentoId, modeloId) {
     try {
-      console.log('Imagens:');
-      console.log(images);
       const uploadTasks = Object.values(images).reduce(async (accPromise, image) => {
         const acc = await accPromise;
         try {
@@ -216,7 +214,7 @@ export function DataProvider({ children }) {
       }, 1000);
       return;
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast({
         title: 'Erro ao excluir empreendimento!',
         variant: 'destructive'
@@ -233,13 +231,12 @@ export function DataProvider({ children }) {
           const data = snapshot.val();
           if (data !== null) {
             setEmpreendimentos(Object.values(data));
-            console.log("Houve uma mudança!");
           } else {
             setEmpreendimentos([]);
           }
         });
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     };
 

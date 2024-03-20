@@ -93,6 +93,7 @@ function ListSideBar({ userFake }) {
             <Image
               src={user.photoUrl ? user.photoUrl : userFake.avatar}
               width={96}
+              alt="user"
               height={96}
               className="rounded-full shadow object-contain"
             />

@@ -31,8 +31,6 @@ function Gallery({ modelos, setGrid, grid, setModelo, setImage }) {
     if (modelos[counter].imagens) {
       setImages(modelos[counter].imagens);
       setModelo(modelos[counter]);
-      console.log("Imagens selecionadas do modelo: ");
-      console.log(modelos[counter].imagens);
     } else {
       setImages([]);
     }
@@ -41,7 +39,7 @@ function Gallery({ modelos, setGrid, grid, setModelo, setImage }) {
   return (
     <div className="w-full ">
       <Carousel>
-        <div className="w-full my-3">
+        <div className="w-full my-3 space-y-3 flex flex-col items-center">
           <Select onValueChange={(value) => setCounter(value)}>
             <SelectTrigger>
               <SelectValue placeholder="Imagens do modelo" />
@@ -58,6 +56,17 @@ function Gallery({ modelos, setGrid, grid, setModelo, setImage }) {
               </SelectGroup>
             </SelectContent>
           </Select>
+          <Button
+            size="sm"
+            className=" w-full gap-3 "
+            onClick={() => {
+              setGrid(!grid);
+              setImage(images);
+            }}
+          >
+            <Grid size={12} color="white" />
+            Grade de imagens
+          </Button>
         </div>
 
         <CarouselContent>
@@ -82,27 +91,6 @@ function Gallery({ modelos, setGrid, grid, setModelo, setImage }) {
                         position: "absolute",
                       }}
                     />
-                    <div className="absolute w-full h-full pb-5 flex justify-end items-end mt-4 px-1 gap-2">
-                      <Button
-                        size="xs"
-                        variant="destructive"
-                        className="flex justify-center gap-1 items-center text-xs px-2 py-1 hover:bg-destructive/70"
-                      >
-                        <Trash size={12} color="white" />
-                        Apagar
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setGrid(!grid);
-                          setImage(images);
-                        }}
-                        size="xs"
-                        className="flex justify-center gap-1 items-center text-xs px-2 py-1 hover:bg-blue-600/70"
-                      >
-                        <Grid size={12} color="white" />
-                        Grade
-                      </Button>
-                    </div>
                   </div>
                 </AspectRatio>
               </CarouselItem>

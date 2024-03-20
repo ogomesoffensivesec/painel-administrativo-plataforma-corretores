@@ -45,8 +45,6 @@ function Page({ params }) {
       if (!empreendimento.chaves) {
         setOpen(true);
       }
-      console.log("Chaves não foram definidas");
-      console.log(empreendimento.chaves);
 
       setPrice(max);
     }
