@@ -52,6 +52,7 @@ function NewNegotiationDialog() {
   const [modelos, setModelos] = useState([]);
   const [viewMode, setViewMode] = useState(false);
   const [newNames, setNewNames] = useState({});
+  const [documentos, setDocumentos] = useState([]);
 
   const { toast } = useToast();
   const [model, setModel] = useState({
@@ -90,6 +91,19 @@ function NewNegotiationDialog() {
     });
   };
 
+  const handleDocumentos = (event) => {
+    const fileList = event.target.files;
+    const newArquivos = Array.from(fileList).map((file) => file);
+    setDocumentos([...documentos, ...newArquivos]);
+    setModel({
+      ...model,
+      documentos: [...documentos, ...newArquivos],
+    });
+    console.log({
+      ...model,
+      documentos: [...documentos, ...newArquivos],
+    });
+  };
   // Função para atualizar o nome do documento
   const handleNameChange = (documentoId, newName) => {
     setNewNames((prevNames) => ({
@@ -729,7 +743,7 @@ function NewNegotiationDialog() {
                             type="file"
                             name="documentos"
                             multiple
-                            onChange={changeModelFile}
+                            onChange={handleDocumentos}
                             accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xlsm,.xls,.txt"
                           />
                         </div>

@@ -24,16 +24,19 @@ import useAuth from "@/hooks/useAuth";
 import MenuEmpreendimento from "@/components/dashboard/empreendimentos/detalhes-empreendimento/empreendimento.menubar";
 import VerificarChaves from "@/components/dashboard/empreendimentos/detalhes-empreendimento/empreendimento.verify.keys";
 import { UsersProvider } from "@/contexts/user.context";
+import GridGaleria from "@/components/dashboard/empreendimentos/detalhes-empreendimento/empreendimento.grid.galeria";
 function Page({ params }) {
   const id = params.empreendimentoId;
   const { user } = useAuth();
 
+  const [grid, setGrid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [price, setPrice] = useState();
   const { empreendimento, priceFilters, counter } = useData();
   const [open, setOpen] = useState(false);
+  const [modelo, setModelo] = useState();
+  const [images, setImages] = useState();
   const route = useRouter();
-
   useEffect(() => {
     if (Object.keys(empreendimento).length === 0) {
       route.push("/dashboard/empreendimentos");
@@ -48,6 +51,15 @@ function Page({ params }) {
       setPrice(max);
     }
   }, []);
+
+  useEffect(() => {
+    setImages(
+      empreendimento &&
+        empreendimento.modelos &&
+        empreendimento.modelos[counter].imagens &&
+        empreendimento.modelos[counter].imagens
+    );
+  }, [empreendimento]);
 
   const downloadAllFilesFromFolder = async () => {
     const modelo = empreendimento.modelos[counter];
@@ -84,7 +96,13 @@ function Page({ params }) {
         <div className="w-full flex justify-center items-center gap-6">
           <div className="w-1/3 h-full flex flex-col  ">
             <div className="mx-3">
-              <Gallery modelos={empreendimento.modelos} />
+              <Gallery
+                modelos={empreendimento.modelos}
+                setGrid={setGrid}
+                grid={grid}
+                setModelo={setModelo}
+                setImage={setImages}
+              />
               <div className="w-full flex justify-center items-center mt-3 gap-2">
                 <Button
                   size="sm"
@@ -115,12 +133,24 @@ function Page({ params }) {
             <Infos empreendimento={empreendimento} />
           </div>
           <div className="w-2/3 h-full flex flex-col gap-4 px-8 ">
-            <div className="flex gap-6">
-              <PriceCard price={price && price} />
-            </div>
-            <div className="mt-4">
-              <TabsOptions empreendimento={empreendimento} />
-            </div>
+            {!grid && (
+              <>
+                <div className="flex gap-6">
+                  <PriceCard price={price && price} />
+                </div>
+                <div className="mt-4">
+                  <TabsOptions empreendimento={empreendimento} />
+                </div>
+              </>
+            )}
+
+            {grid && (
+              <GridGaleria
+                images={images}
+                idEmpreendimento={id}
+                modelo={modelo}
+              />
+            )}
           </div>
         </div>
       </div>

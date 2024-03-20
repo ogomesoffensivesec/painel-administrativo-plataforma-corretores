@@ -28,9 +28,27 @@ export function DataProvider({ children }) {
   }
 
   function encontrarItemPorId(id) {
-    const emp = empreendimentos.find(emp => emp.id === id);
-    setEmpreendimento(emp)
+    const referenciaEmpreendimento = ref(database, `/empreendimentos/${id}`);
+
+    const buscarEmpreendimento = async () => {
+      try {
+        await onValue(referenciaEmpreendimento, (snapshot) => {
+          const emp = snapshot.val();
+          setEmpreendimento(emp);
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    buscarEmpreendimento();
+
+    // Retorna uma função de limpeza para desinscrever o ouvinte
+    return () => {
+      off(referenciaEmpreendimento);
+    };
   }
+
 
   async function create(empreendimento, modelos) {
     setLoading(true);
@@ -71,15 +89,51 @@ export function DataProvider({ children }) {
   }
 
   async function uploadImages(images, empreendimentoId, modeloId) {
+    try {
+      console.log('Imagens:');
+      console.log(images);
+      const uploadTasks = Object.values(images).reduce(async (accPromise, image) => {
+        const acc = await accPromise;
+        try {
+          const imageId = v4();
+          const referenciaImagem = storageRef(storage, `/empreendimentos/${empreendimentoId}/modelos/${modeloId}/imagens/${imageId}`);
+          await uploadBytes(referenciaImagem, image, { contentType: image.type });
+          const url = await getDownloadURL(referenciaImagem);
+          acc[imageId] = { url, id: imageId };
+          return acc;
+        } catch (error) {
+          throw new Error(`Erro ao processar imagem: ${error.message}`);
+        }
+      }, Promise.resolve({}));
+      return await uploadTasks;
+    } catch (error) {
+      console.error(`Erro ao fazer upload de imagens: ${error.message}`);
+      throw error;
+    }
+  }
 
-    const uploadTasks = Object.values(images).map(async (image) => {
-      const imageId = v4();
-      const referenciaImagem = storageRef(storage, `/empreendimentos/${empreendimentoId}/modelos/${modeloId}/imagens/${imageId}`);
-      await uploadBytes(referenciaImagem, image, { contentType: image.type });
-      const url = await getDownloadURL(referenciaImagem);
-      return { url, id: imageId };
-    });
-    return await Promise.all(uploadTasks);
+  async function addNewImagesToModel(images, empreendimentoId, modeloId) {
+    try {
+      const uploadTasks = Object.values(images).reduce(async (accPromise, image) => {
+        const acc = await accPromise;
+        try {
+          const imageId = v4();
+          const referenciaImagem = storageRef(storage, `/empreendimentos/${empreendimentoId}/modelos/${modeloId}/imagens/${imageId}`);
+          await uploadBytes(referenciaImagem, image, { contentType: image.type });
+          const url = await getDownloadURL(referenciaImagem);
+          acc[imageId] = { url, id: imageId };
+          return acc;
+        } catch (error) {
+          // Tratar o erro específico aqui ou rejeitar a promessa com throw
+          throw new Error(`Erro ao processar imagem: ${error.message}`);
+        }
+      }, Promise.resolve({}));
+      return await uploadTasks;
+    } catch (error) {
+      // Tratar erros globais aqui
+      console.error(`Erro ao adicionar novas imagens ao modelo: ${error.message}`);
+      throw error; // Propagar o erro para o chamador da função
+    }
   }
 
   async function uploadDocuments(documents, empreendimentoId, modeloId) {
@@ -176,7 +230,13 @@ export function DataProvider({ children }) {
     const buscarDados = async () => {
       try {
         await onValue(referenciaDatabase, (snapshot) => {
-          setEmpreendimentos(Object.values(snapshot.val() !== null ? snapshot.val() : []));
+          const data = snapshot.val();
+          if (data !== null) {
+            setEmpreendimentos(Object.values(data));
+            console.log("Houve uma mudança!");
+          } else {
+            setEmpreendimentos([]);
+          }
         });
       } catch (error) {
         console.log(error);
@@ -184,15 +244,10 @@ export function DataProvider({ children }) {
     };
 
     buscarDados();
-
-    const limparInscricao = () => {
+    return () => {
       off(referenciaDatabase);
     };
-
-    return () => {
-      limparInscricao(); // Chama a função de limpeza ao desmontar o componente
-    };
-  }, []);
+  }, []); 
 
 
   async function publicarEmpreendimento(emp) {
@@ -256,7 +311,8 @@ export function DataProvider({ children }) {
       counter,
       setCounter,
       publicarEmpreendimento,
-      compartilharWhatsapp
+      compartilharWhatsapp,
+      addNewImagesToModel
     }}>
       {children}
     </DataContext.Provider>
