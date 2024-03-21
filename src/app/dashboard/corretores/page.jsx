@@ -1,8 +1,8 @@
 "use client";
 
+import CadastroCorretor from "@/components/dashboard/corretores/corretores.cadastro";
 import { CorretoresFilter } from "@/components/dashboard/corretores/corretores.filter";
 import TabelaCorretores from "@/components/dashboard/corretores/corretores.table";
-import NewNegotiationDialog from "@/components/dashboard/negotiations/new-real-state";
 import { UsersProvider } from "@/contexts/user.context";
 import { auth } from "@/database/config/firebase";
 import { useRouter } from "next/navigation";
@@ -28,7 +28,7 @@ function Corretores() {
           <div className="w-full h-full dark:bg-stone-950 p-10">
             <div className="max-w-6xl mx-auto  space-y-4">
               <div className="flex items-center justify-between gap-2">
-                <CorretoresFilter /> <NewNegotiationDialog />
+                <CorretoresFilter /> <CadastroCorretor />
               </div>
               <div className="p-6 max-w-6xl mx-auto border rounded">
                 <TabelaCorretores />
