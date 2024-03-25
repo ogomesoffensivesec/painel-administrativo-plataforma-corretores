@@ -3,23 +3,20 @@
 import {
   createUserWithEmailAndPassword,
   signOut,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  onIdTokenChanged,
-  GoogleAuthProvider,
-  updateProfile,
+  signInWithEmailAndPassword, onIdTokenChanged, updateProfile
 } from "firebase/auth";
 import {
   getDownloadURL,
   ref as storageRef,
   uploadBytes,
 } from "firebase/storage";
-import { auth, database, provider, storage } from "../database/config/firebase";
+import { auth, database, storage } from "../database/config/firebase";
 import { createContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import cookie from 'js-cookie'
+import cookie from 'js-cookie';
 import { toast } from "@/components/ui/use-toast";
 import { get, ref, set } from "firebase/database";
+import { v4 } from "uuid";
 
 const AuthContext = createContext();
 
@@ -43,62 +40,71 @@ export function AuthProvider({ children }) {
   const router = useRouter();
 
   const verifyUser = async () => {
-    const referenciaDatabase = ref(database, `/corretores`)
-    const snapshot = await get(referenciaDatabase)
-    const users = snapshot.val()
-    if (users === null) {
-      return false
+    try {
+      const referenciaDatabase = ref(database, `/corretores`)
+      const snapshot = await get(referenciaDatabase)
+      const users = snapshot.val()
+      if (users === null) {
+        return false
+      }
+      const userChecked = await Object.values(users).find((u) => u.uid === user.uid)
+
+      const verified = userChecked !== undefined && userChecked.verify
+      return verified
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Erro',
+        description: 'Ocorreu um erro ao verificar o usuário.',
+        variant: 'error'
+      });
     }
-    const userChecked = await Object.values(users).find((u) => u.uid === user.uid)
-
-    const verified = userChecked !== undefined && userChecked.verify
-    return verified
-  }
-
+  };
 
 
 
 
 
   const handleUser = async (currentUser) => {
-    if (currentUser) {
-      const formatedUser = await formatUser(currentUser)
-      setUser(formatedUser)
-      setSession(true)
-
-      return formatedUser
+    try {
+      if (currentUser) {
+        const formatedUser = await formatUser(currentUser)
+        setUser(formatedUser)
+        setSession(true)
+        return formatedUser
+      }
+      setUser(false)
+      setSession(false)
+      return false
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Erro',
+        description: 'Ocorreu um erro ao processar o usuário.',
+        variant: 'error'
+      });
     }
-    setUser(false)
-    setSession(false)
-    return false
-  }
-
+  };
 
   const setSession = (session) => {
-    if (session) {
-      cookie.set('ogdev-auth', session, {
-        expires: 1
-      })
-    } else {
-      cookie.remove('ogdev-auth')
-    }
-  }
-
-  const signInGoogle = async () => {
     try {
-      setLoading(true);
-      const response = await signInWithPopup(auth, provider)
-      //const credential = GoogleAuthProvider.credentialFromResult(response);
-      // const token = credential.accessToken;
-      const user = response.user;
-      const newUser = handleUser(user)
-
-      router.push("/dashboard");
-      return response;
-    } finally {
-      setLoading(false);
+      if (session) {
+        cookie.set('ogdev-auth', session, {
+          expires: 1
+        })
+      } else {
+        cookie.remove('ogdev-auth')
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Erro',
+        description: 'Ocorreu um erro ao configurar a sessão.',
+        variant: 'error'
+      });
     }
-  }
+  };
+
 
   const signIn = async (email, password) => {
     try {
@@ -119,44 +125,78 @@ export function AuthProvider({ children }) {
       }, 500);
     }
   };
-
-  const signUp = async (email, password, userData) => {
+  const writeUserToDatabase = async (userData) => {
+    const databaseRef = ref(database, `/corretores/${userData.uid}/`);
     try {
-      setLoading(true)
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-      const currentUser = userCredential.user;
-      const newUser = await handleUser(currentUser)
+      if (userData.creciFile && userData.creciFile.url) {
+        await set(databaseRef, userData);
+      } else {
+        console.error("CreciFile URL is undefined.");
+        toast({
+          title: 'Erro',
+          description: 'A URL do arquivo Creci não está definida.',
+          variant: 'error'
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Erro',
+        description: 'Ocorreu um erro ao escrever no banco de dados.',
+        variant: 'error'
+      });
+    }
+  };
 
 
-      newUser.phone = userData.phone
-      newUser.name = userData.name
-      newUser.creciFile = userData.creciFile
-      await writeUserToDatabase(newUser)
+  const signUp = async (email, pass, userData) => {
+
+
+    try {
+      setLoading(true);
+
+      const newUser = {
+        email: email,
+        name: userData.name,
+        phone: userData.phone,
+        password: pass,
+        uid: v4(),
+        verify: true
+      }
+
+
+      const fileID = v4();
+      const fileURL = await uploadFile(newUser.uid, userData.creciFile, fileID);
+      const fileData = {
+        url: fileURL,
+        id: fileID
+      };
+      newUser.creciFile = fileData;
+
+      await writeUserToDatabase(newUser);
 
       toast({
         title: 'Conta criada com sucesso!',
-        description: 'Parabéns! Agora você faz parte do nosso time!',
+        description: 'Parabéns! Agora o corretor faz parte do nosso time!',
         variant: 'success'
-      })
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 1500)
-      return newUser
+      });
 
-    } finally {
-      setLoading(false)
-    }
-  }
-
-
-  const writeUserToDatabase = async (userData) => {
-    const databaseRef = ref(database, `/corretores/${userData.uid}/`)
-    try {
-      await set(databaseRef, userData)
+      return newUser;
     } catch (error) {
-      console.log(error.code);
+      console.error(error);
+      toast({
+        title: 'Erro',
+        description: 'Ocorreu um erro ao criar a conta do usuário.',
+        variant: 'error'
+      });
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+
+
+
 
   const signout = async () => {
     router.push('/')
@@ -193,6 +233,7 @@ export function AuthProvider({ children }) {
       return fileUrl;
     } catch (error) {
       console.log(error.message);
+
     }
   };
 
@@ -208,7 +249,6 @@ export function AuthProvider({ children }) {
     loading,
     setLoading,
     signIn,
-    signInGoogle,
     signUp,
     signout,
     changeUserData,

@@ -18,19 +18,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import useAuth from "@/hooks/useAuth";
 function CadastroCorretor() {
   const [password, setPassword] = useState("");
-  const { handleSubmit, register } = useForm();
+  const { handleSubmit, register, reset } = useForm();
+  const { signUp } = useAuth();
 
-  const onSubmit = (data) => {
-    if (!data.nome || !data.phone || !data.creci || !data.email) {
+  const onSubmit = async (data) => {
+    if (!data.name || !data.phone || !data.creci || !data.email) {
       toast({
         title: "Por favor, preencha todos os campos.",
         variant: "destructive",
       });
       return;
     }
-    console.log(data);
+    await signUp(data.email, password, data);
+
+    reset();
   };
 
   function gerarSenha() {
@@ -61,8 +65,9 @@ function CadastroCorretor() {
       title: "Senha copiada",
       variant: "success",
     });
-
     setPassword("");
+
+    //setPassword("");
   }
   return (
     <Dialog>
@@ -94,9 +99,9 @@ function CadastroCorretor() {
                     <Label>Nome completo</Label>
                     <Input
                       type="text"
-                      id="nome"
+                      id="name"
                       placeholder="Nome completo do corretor"
-                      {...register("nome")}
+                      {...register("name")}
                     />
                   </div>
                   <div className="w-full flex flex-col gap-2">

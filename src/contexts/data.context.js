@@ -43,7 +43,6 @@ export function DataProvider({ children }) {
 
     buscarEmpreendimento();
 
-    // Retorna uma função de limpeza para desinscrever o ouvinte
     return () => {
       off(referenciaEmpreendimento);
     };
@@ -122,15 +121,14 @@ export function DataProvider({ children }) {
           acc[imageId] = { url, id: imageId };
           return acc;
         } catch (error) {
-          // Tratar o erro específico aqui ou rejeitar a promessa com throw
+
           throw new Error(`Erro ao processar imagem: ${error.message}`);
         }
       }, Promise.resolve({}));
       return await uploadTasks;
     } catch (error) {
-      // Tratar erros globais aqui
       console.error(`Erro ao adicionar novas imagens ao modelo: ${error.message}`);
-      throw error; // Propagar o erro para o chamador da função
+      throw error; 
     }
   }
 
@@ -166,10 +164,6 @@ export function DataProvider({ children }) {
       return investments
     }
     if (snapshot.exists()) {
-
-      // setTimeout(() => {
-      //   console.clear()
-      // }, 2000)
       investments = Object.values(snapshot.val());
 
       if (name) {

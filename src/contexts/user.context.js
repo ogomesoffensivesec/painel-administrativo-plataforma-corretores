@@ -8,6 +8,11 @@ const UsersContext = createContext();
 
 export function UsersProvider({ children }) {
   const [users, setUsers] = useState();
+  const [user, setUser] = useState();
+
+
+
+
   const obterReferencia = (id) => {
     if (!id) {
       const referenciaUsuarios = ref(database, '/corretores')
@@ -53,6 +58,22 @@ export function UsersProvider({ children }) {
     })
 
   }
+  const fetchUser = async (id) => {
+    try {
+      const referenciaUser = ref(database, `/corretores/${id}`);
+      const snapshot = await get(referenciaUser);
+      if (snapshot.exists()) {
+        setUser(snapshot.val());
+        console.log('Usuario encontrado: ', snapshot.val());
+        return snapshot.val();
+      }
+    } catch (error) {
+      console.error('Erro ao buscar usuário:', error);
+      // Aqui você pode tratar o erro de acordo com sua lógica de aplicativo
+      // Por exemplo, lançar uma exceção, retornar um valor padrão, etc.
+    }
+  };
+
 
   useEffect(() => {
     fetchUsers()
@@ -62,7 +83,10 @@ export function UsersProvider({ children }) {
     <UsersContext.Provider value={{
       users,
       fetchUsers,
-      updateVisita
+      updateVisita,
+      fetchUser,
+      user
+
     }}>
       {children}
     </UsersContext.Provider>

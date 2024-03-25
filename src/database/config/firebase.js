@@ -3,14 +3,14 @@ import { GoogleAuthProvider, getAuth } from "firebase/auth"
 import { getDatabase } from 'firebase/database'
 import { getStorage } from 'firebase/storage'
 const firebaseConfig = {
-  apiKey: "AIzaSyBNyNhuLUxuHskST_AHoQqQ-uIgX9ZrH-U",
-  authDomain: "plataforma-corretores.firebaseapp.com",
-  databaseURL: "https://plataforma-corretores-default-rtdb.firebaseio.com",
-  projectId: "plataforma-corretores",
-  storageBucket: "plataforma-corretores.appspot.com",
-  messagingSenderId: "802491799746",
-  appId: "1:802491799746:web:ecef37d5ef5d1e6af3835b",
-  measurementId: "G-0NCP36F77B"
+  apiKey: process.env.apiKey,
+  authDomain: process.env.authDomain,
+  databaseURL: process.env.databaseURL,
+  projectId: process.env.projectId,
+  storageBucket: process.env.storageBucket,
+  messagingSenderId: process.env.messagingSenderId,
+  appId: process.env.appId,
+  measurementId: process.env.measurementId
 };
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

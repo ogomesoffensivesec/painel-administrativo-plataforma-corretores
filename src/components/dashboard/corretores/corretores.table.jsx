@@ -14,13 +14,15 @@ import { useQuery } from "react-query";
 
 import useUsers from "@/hooks/useUsers";
 import PaginationComponent from "../empreendimentos/pagination";
+import Detalhes from "./corretores.detalhes.dialog";
 
 function TabelaCorretores() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(15);
   const searchParams = useSearchParams();
   const name = searchParams.get("name");
-  const { fetchUsers } = useUsers();
+  const { fetchUsers, fetchUser } = useUsers();
+  const [open, setOpen] = useState(false);
 
   const {
     data: corretores,
@@ -32,7 +34,10 @@ function TabelaCorretores() {
     queryKey: ["corretores", name],
     queryFn: () => fetchUsers(name),
   });
-
+  const handleOpenDetails = async (id) => {
+    await fetchUser(id);
+    setOpen(!open);
+  };
   if (isLoading) return "Carregando resultados...";
   if (error) return "An error has occurred: " + error.message;
   let startIndex;
@@ -69,8 +74,12 @@ function TabelaCorretores() {
                       "Este corretor ainda não realizou visitas"}
                   </TableCell>
                   <TableCell>
-                    <Button size="sm" variant="destructive">
-                      Excluir
+                    <Detalhes open={open} setOpen={setOpen} />
+                    <Button
+                      type="button"
+                      onClick={() => handleOpenDetails(corretor.uid)}
+                    >
+                      Detalhes
                     </Button>
                   </TableCell>
                 </TableRow>
