@@ -1,6 +1,6 @@
 import { toast } from "@/components/ui/use-toast";
 import { database } from "@/database/config/firebase";
-import { get, ref, remove, set } from "firebase/database";
+import { get, push, ref, remove, set, update } from "firebase/database";
 import { v4 } from "uuid";
 
 async function fetchVisits() {
@@ -84,7 +84,14 @@ export async function scheduleVisit(visitId, data) {
       corretor: corretor,
       createdAt: createdAt,
     };
-
+    if (realState.chaves && realState.chaves === 0) {
+      toast({
+        title: "Chaves sendo utilizadas",
+        description: "Todas as chaves deste imóvel",
+        variant: "destructive",
+      });
+      return;
+    }
     const referenciaDatabase = ref(database, `/visitas/${visitId}`);
     await set(referenciaDatabase, visit);
 
@@ -120,3 +127,153 @@ export async function cancelVisit(visit, router) {
     });
   }
 }
+function formatDate(date) {
+  var day = date.getDate();
+  var month = date.getMonth() + 1;
+  var year = date.getFullYear();
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+
+  if (day < 10) {
+    day = "0" + day;
+  }
+  if (month < 10) {
+    month = "0" + month;
+  }
+  if (hours < 10) {
+    hours = "0" + hours;
+  }
+  if (minutes < 10) {
+    minutes = "0" + minutes;
+  }
+
+  const data = day + "/" + month + "/" + year;
+  const hour = hours + ":" + minutes;
+  return { data, hour };
+}
+
+export async function visitInProgress(visit) {
+  const referenciaVisitaPendente = ref(
+    database,
+    `/visitas-em-andamento/${visit.id}`
+  );
+
+  let currentDate = new Date();
+  const { data, hour } = formatDate(currentDate);
+
+  const visitaPendente = {
+    id: visit.id,
+    corretorID: visit.corretor,
+    retiradaHora: hour,
+    retiradaData: data,
+  };
+  await set(referenciaVisitaPendente, visitaPendente);
+  return;
+}
+
+function horaParaMilissegundos(tempo) {
+  var partes = tempo.split(":");
+  var horas = parseInt(partes[0], 10);
+  var minutos = parseInt(partes[1], 10);
+
+  // Converter horas e minutos em milissegundos
+  var horasEmMilissegundos = horas * 60 * 60 * 1000;
+  var minutosEmMilissegundos = minutos * 60 * 1000;
+
+  // Somar horas e minutos convertidos para obter o total em milissegundos
+  var totalEmMilissegundos = horasEmMilissegundos + minutosEmMilissegundos;
+
+  return totalEmMilissegundos;
+}
+
+function getCurrentTime() {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+//  // Percorre a lista de objetos com o campo 'hour'
+//  timeList.forEach((item, index) => {
+//    const time = item.hour;
+
+//    // Comparação do horário atual com cada hora da lista
+//    if (currentTime === time) {
+//      console.log(
+//        `O horário atual ${currentTime} é igual à hora na posição ${index} da lista: ${time}`
+//      );
+//    } else {
+//      console.log(
+//        `O horário atual ${currentTime} é diferente da hora na posição ${index} da lista: ${time}`
+//      );
+//    }
+//  });
+async function verificarVisitasExpiradas() {
+  try {
+    const referenciaVisita = ref(database, "/visitas-em-andamento");
+    const snapshot = await get(referenciaVisita);
+    if (snapshot.exists()) {
+      const visitasPendentes = snapshot.val();
+      const currentTime = getCurrentTime();
+      Object.values(visitasPendentes).forEach((visita) => {
+        const time = visita.retiradaHora;
+        const timeNotPoint = time.replace(":", "");
+        const retiradaExpirada = parseInt(timeNotPoint) + 200;
+        const horaAtual = currentTime.replace(":", "");
+
+        console.log(
+          "O corretor deverá entregar as chaves as: " + retiradaExpirada
+        );
+        console.log("Agora são: " + horaAtual);
+        if (retiradaExpirada <= horaAtual) {
+          console.log(`Visita expirada ${visita.id}`);
+          removerVisitaPendente(visita.id, true);
+        } else {
+          console.log(`Visita dentro do horário ${visita.id}`);
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error in verificarVisitasExpiradas:", error);
+  }
+}
+
+function executarVerificacaoDeVisitas() {
+  verificarVisitasExpiradas();
+  setInterval(verificarVisitasExpiradas, 10 * 60 * 1000);
+}
+
+executarVerificacaoDeVisitas();
+
+export async function removerVisitaPendente(idVisita, expired) {
+  try {
+    const referenciaDatabase = ref(
+      database,
+      `/visitas-em-andamento/${idVisita}`
+    );
+    const referenciaVisitas = ref(database, `/visitas/${idVisita}/`);
+    const snapshot = await get(referenciaVisitas);
+
+    if (snapshot.exists() && expired) {
+      const data = snapshot.val();
+      let logs = data.log;
+      const log = {
+        action: "Tempo da visita expirada",
+        date: new Date(),
+      };
+      logs.push(log);
+
+      await update(referenciaVisitas, {
+        log: logs,
+        expired: true,
+      });
+    }
+
+    await remove(referenciaDatabase);
+
+    return;
+  } catch (error) {
+    console.error("Error in removerVisitaPendente:", error);
+  }
+}
+

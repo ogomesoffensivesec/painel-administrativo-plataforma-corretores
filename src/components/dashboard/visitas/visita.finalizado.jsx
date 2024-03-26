@@ -12,8 +12,17 @@ import { database } from "@/database/config/firebase";
 import { toast } from "@/components/ui/use-toast";
 import { useQueryClient } from "react-query";
 import useUsers from "@/hooks/useUsers";
+import { removerVisitaPendente } from "./visitas-data";
 
-function FinalizarVisita({ id, open, setOpen, loading, setLoading, visit }) {
+function FinalizarVisita({
+  id,
+  open,
+  setOpen,
+  loading,
+  setLoading,
+  visit,
+  timer,
+}) {
   const queryClient = useQueryClient();
   const { updateVisita } = useUsers();
   const finalizar = async () => {
@@ -44,6 +53,7 @@ function FinalizarVisita({ id, open, setOpen, loading, setLoading, visit }) {
       });
 
       queryClient.invalidateQueries({ queryKey: ["visits"] });
+      removerVisitaPendente(id);
       setOpen(false);
     } catch (error) {
       console.error(error.message);

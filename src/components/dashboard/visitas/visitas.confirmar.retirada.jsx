@@ -7,24 +7,30 @@ import {
 } from "@/components/ui/dialog";
 
 import { Button } from "../../ui/button";
-import { ref, update } from "firebase/database";
+import { get, ref, update } from "firebase/database";
 import { database } from "@/database/config/firebase";
 import { toast } from "@/components/ui/use-toast";
 import { useQueryClient } from "react-query";
-import { getVisits } from "./visitas-data";
+import { getVisits, visitInProgress } from "./visitas-data";
 import { sendMessage } from "@/services/whatsapp.bot";
+import useData from "@/hooks/useData";
 
-function ConfirmarRetirada({ id, open, setOpen, loading, setLoading, phone }) {
+// const cancelarTemporizador = (timer) => {
+//   if (timer) {
+//     clearInterval(timer);
+//   }
+//   document.cookie =
+//     "timerRunning=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+// };
+
+function ConfirmarRetirada({ id, open, setOpen, loading, setLoading, setTimer }) {
   const queryClient = useQueryClient();
+  let timer;
 
   const confirmar = async () => {
     const referenciaDatabase = ref(database, `/visitas/${id}`);
     let visits = await getVisits();
-    //const objetoFiltrado = listaDeObjetos.find(objeto => objeto.categoria === 'A');
-
     const visit = visits.find((visita) => visita.id === id);
-
-    let timer;
 
     try {
       setLoading(true);
@@ -33,6 +39,16 @@ function ConfirmarRetirada({ id, open, setOpen, loading, setLoading, phone }) {
         action: "Chaves retiradas",
         date: new Date().toISOString(),
       });
+
+      const referenciaEmpreendiemtnos = ref(
+        database,
+        `/empreendimentos/${visit.realState.id}`
+      );
+
+      await update(referenciaEmpreendiemtnos, {
+        chaves: parseInt(visit.realState.chaves) - 1,
+      });
+
       await update(referenciaDatabase, {
         log: logAction,
         status: "Chaves retiradas",
@@ -47,24 +63,30 @@ function ConfirmarRetirada({ id, open, setOpen, loading, setLoading, phone }) {
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["visits"] });
 
-      // Definindo um intervalo de 2 horas (em milissegundos)]
-      //  2 * 60 * 60 * 1000;
-      const tempoLimite = 5000;
-      timer = setInterval(async () => {
-        logAction.push({
-          action: "Tempo da visita expirado!",
-          date: new Date().toISOString(),
-        });
+     visitInProgress(visit)
 
-        await update(referenciaDatabase, {
-          log: logAction,
-          expired: true,
-        });
 
-        sendMessage("11993420447");
-        queryClient.invalidateQueries({ queryKey: ["visits"] });
-        clearInterval(timer);
-      }, tempoLimite);
+
+      // const tempoLimite = 5000; 
+      // timer = setInterval(async () => {
+      //   logAction.push({
+      //     action: "Tempo da visita expirado!",
+      //     date: new Date().toISOString(),
+      //   });
+
+      //   await update(referenciaDatabase, {
+      //     log: logAction,
+      //     expired: true,
+      //   });
+
+      //   sendMessage("11993420447");
+      //   queryClient.invalidateQueries({ queryKey: ["visits"] });
+
+      //   clearInterval(timer);
+      // }, tempoLimite);
+
+      // // Define um cookie de sessão para indicar que o temporizador está em execução
+      // document.cookie = "timerRunning=true; path=/;";
     } catch (error) {
       console.error(error.message);
       toast({
@@ -72,6 +94,7 @@ function ConfirmarRetirada({ id, open, setOpen, loading, setLoading, phone }) {
         description: "Tente novamente em alguns instantes",
         variant: "destructive",
       });
+      // cancelarTemporizador(timer);
     } finally {
       setLoading(false);
     }

@@ -28,6 +28,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Send } from "lucide-react";
 import { sendMessage } from "@/services/whatsapp.bot";
+import useData from "@/hooks/useData";
 
 function TabelaVisitas() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,6 +50,8 @@ function TabelaVisitas() {
     }
     return () => clearInterval(interval);
   }, [ativo, segundos]);
+
+  const { encontrarItemPorId } = useData();
 
   const searchParams = useSearchParams();
   const realState = searchParams.get("realState");

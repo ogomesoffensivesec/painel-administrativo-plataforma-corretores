@@ -16,6 +16,7 @@ export function DataProvider({ children }) {
   const [empreendimento, setEmpreendimento] = useState({});
   const [loading, setLoading] = useState(false);
   const [counter, setCounter] = useState(0);
+  const [visitasPendentes, setVisitasPendentes] = useState([]);
   const router = useRouter();
 
   function priceFilters(models) {
@@ -50,14 +51,15 @@ export function DataProvider({ children }) {
 
 
   async function create(empreendimento, modelos) {
+
     setLoading(true);
     const uid = v4();
     const referenciaDatabase = ref(database, `/empreendimentos/${uid}`);
-    const modelosEnviados = await uploadFiles(modelos, uid);
+    const modelosEnviados = await uploadFiles(modelos, uid)
     empreendimento.modelos = modelosEnviados;
     empreendimento.id = uid;
     try {
-      await set(referenciaDatabase, empreendimento);
+      await set(referenciaDatabase, empreendimento)
       toast({
         title: "Empreendimento cadastrado com sucesso!",
         description: "O empreendimento está pronto para ser publicado",
@@ -128,7 +130,7 @@ export function DataProvider({ children }) {
       return await uploadTasks;
     } catch (error) {
       console.error(`Erro ao adicionar novas imagens ao modelo: ${error.message}`);
-      throw error; 
+      throw error;
     }
   }
 
@@ -217,11 +219,23 @@ export function DataProvider({ children }) {
   }
 
   useEffect(() => {
-    const referenciaDatabase = ref(database, '/empreendimentos');
-
+    const referenciaEmpreendimentos = ref(database, '/empreendimentos');
+    const referenciaVisitasPendentes = ref(database, `/visitas-em-andamento`)
     const buscarDados = async () => {
       try {
-        await onValue(referenciaDatabase, (snapshot) => {
+        await onValue(referenciaVisitasPendentes, snapshot => {
+          if (snapshot.exists()) {
+            const data = snapshot.val()
+            if (data !== null) {
+              setVisitasPendentes(data)
+              console.log(`Visitas: ${data}`);
+            }
+            else {
+              setVisitasPendentes([])
+            }
+          }
+        })
+        await onValue(referenciaEmpreendimentos, (snapshot) => {
           const data = snapshot.val();
           if (data !== null) {
             setEmpreendimentos(Object.values(data));
@@ -236,9 +250,12 @@ export function DataProvider({ children }) {
 
     buscarDados();
     return () => {
-      off(referenciaDatabase);
+      off(referenciaEmpreendimentos);
+      off(referenciaVisitasPendentes)
     };
-  }, []); 
+  }, []);
+
+
 
 
   async function publicarEmpreendimento(emp) {
@@ -303,7 +320,8 @@ export function DataProvider({ children }) {
       setCounter,
       publicarEmpreendimento,
       compartilharWhatsapp,
-      addNewImagesToModel
+      addNewImagesToModel,
+      visitasPendentes
     }}>
       {children}
     </DataContext.Provider>
