@@ -1,14 +1,14 @@
 import { toast } from "@/components/ui/use-toast";
 
 
-export const sendMessage = async (phone) => {
+export const sendMessage = async (phone, name, imovel) => {
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
 
   const urlencoded = new URLSearchParams();
-  urlencoded.append("token", "bbsi8z7rwlhp520t");
+  urlencoded.append("token", process.env.whatsappKey);
   urlencoded.append("to", `+55${phone}`);
-  urlencoded.append("body", "BOT MAKE-HOME: Sua visita ao imóvel está chegando ao fim! Notifique a construtora.");
+  urlencoded.append("body", `Olá, eu sou o Gorski 🤖\n Sou um bot da construtora Make Home\n\n Prezado (a), ${name} \n Sua visita ao imóvel ${imovel} está chegando ao fim! \n\n⚠️ Notifique a construtora ⚠️`);
 
   const requestOptions = {
     method: 'POST',
@@ -19,7 +19,6 @@ export const sendMessage = async (phone) => {
   try {
     const response = await fetch("https://api.ultramsg.com/instance81611/messages/chat", requestOptions);
     const result = await response.text();
-    console.log(result);
     if (result) {
       console.log(result.sent);
 
@@ -30,7 +29,7 @@ export const sendMessage = async (phone) => {
       })
     }
   } catch (error) {
-    console.log('error', error);
+    console.error(error.message);
   }
 };
 

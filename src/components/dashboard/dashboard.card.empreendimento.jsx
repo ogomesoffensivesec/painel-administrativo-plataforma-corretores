@@ -2,15 +2,13 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { database } from "@/database/config/firebase";
-import useData from "@/hooks/useData";
 import { onValue, ref } from "firebase/database";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 // import { Container } from './styles';
 

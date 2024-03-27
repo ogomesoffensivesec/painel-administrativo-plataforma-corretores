@@ -3,14 +3,12 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 
-import React, { useEffect, useState } from "react";
-import { getVisits } from "./visitas/visitas-data";
-import { get, onValue, ref } from "firebase/database";
+import { useEffect, useState } from "react";
+import { onValue, ref } from "firebase/database";
 import { database } from "@/database/config/firebase";
 
 // import { Container } from './styles';

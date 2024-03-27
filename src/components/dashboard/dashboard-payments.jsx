@@ -3,7 +3,6 @@ import {
   TableBody,
   TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -11,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { File } from "lucide-react";
-import React from "react";
 
 
 function TableComponent() {

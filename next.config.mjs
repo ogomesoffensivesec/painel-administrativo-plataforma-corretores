@@ -12,7 +12,8 @@ const nextConfig = {
     storageBucket: 'plataforma-corretores.appspot.com',
     messagingSenderId: '802491799746',
     appId: '1:802491799746:web:ecef37d5ef5d1e6af3835b',
-    measurementId: 'G-0NCP36F77B'
+    measurementId: 'G-0NCP36F77B',
+    whatsappKey: 'bbsi8z7rwlhp520t'
   },
   reactStrictMode: false,
   experimental: { appDir: true, serverComponentsExternalPackages: ["mongoose"] },

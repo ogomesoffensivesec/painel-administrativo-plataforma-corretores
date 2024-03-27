@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { Button } from "../../ui/button";
-import { ref, set, update } from "firebase/database";
+import { get, ref, set, update } from "firebase/database";
 import { database } from "@/database/config/firebase";
 import { toast } from "@/components/ui/use-toast";
 import { useQueryClient } from "react-query";
@@ -26,35 +26,48 @@ function FinalizarVisita({
   const queryClient = useQueryClient();
   const { updateVisita } = useUsers();
   const finalizar = async () => {
-    const referenciaDatabase = ref(database, `/visitas/${id}`);
     try {
-      let logAction = [];
-      if (visit.log) {
-        logAction = visit.log;
+      const referenciaDatabase = ref(database, `/visitas/${id}`);
+      const referenciaEmpreendimentos = ref(
+        database,
+        `/empreendimentos/${visit.realState.id}`
+      );
+      const dataEmpreendimento = await get(referenciaEmpreendimentos);
+      if (dataEmpreendimento.exists()) {
+        const empreendimento = dataEmpreendimento.val();
+        const updateKeys = empreendimento.chaves + 1;
+        await update(referenciaEmpreendimentos, {
+          chaves: updateKeys,
+        });
+
+        let logAction = [];
+        if (visit.log) {
+          logAction = visit.log;
+        }
+        logAction.push({
+          action: "Visita realizada com sucesso",
+          date: new Date().toISOString(),
+        });
+
+        visit.log = logAction;
+        setLoading(true);
+        await set(referenciaDatabase, visit);
+
+        await update(referenciaDatabase, {
+          finalizada: true,
+        });
+        await updateVisita(id, visit.corretor);
+
+        toast({
+          title: "Visita finalizada com sucesso!",
+          description: "Acompanhe as negociações do corretor interessado!",
+          variant: "success",
+        });
+
+        queryClient.invalidateQueries({ queryKey: ["visits"] });
+        removerVisitaPendente(id);
+        setOpen(false);
       }
-      logAction.push({
-        action: "Visita realizada com sucesso",
-        date: new Date().toISOString(),
-      });
-
-      visit.log = logAction;
-      setLoading(true);
-      await set(referenciaDatabase, visit);
-
-      await update(referenciaDatabase, {
-        finalizada: true,
-      });
-      await updateVisita(id, visit.corretor);
-
-      toast({
-        title: "Visita finalizada com sucesso!",
-        description: "Acompanhe as negociações do corretor interessado!",
-        variant: "success",
-      });
-
-      queryClient.invalidateQueries({ queryKey: ["visits"] });
-      removerVisitaPendente(id);
-      setOpen(false);
     } catch (error) {
       console.error(error.message);
       toast({

@@ -1,7 +1,6 @@
 "use client";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -10,21 +9,21 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useForm } from "react-hook-form";
 import { Button } from "../../ui/button";
 import { toast } from "../../ui/use-toast";
 import { PlusCircle } from "lucide-react";
-import useData from "@/hooks/useData";
 import { getVisits, scheduleVisit } from "./visitas-data";
 import useUsers from "@/hooks/useUsers";
 import { useQueryClient } from "react-query";
 import { v4 } from "uuid";
+import { onValue, ref } from "firebase/database";
+import { database } from "@/database/config/firebase";
 
 function NewVisitDialog() {
   const [realStates, setRealStates] = useState([]);
-  const { getInvestiments } = useData();
   const { users } = useUsers();
   const [loading, setLoading] = useState(false);
   const [available, setAvailable] = useState(false);
@@ -38,8 +37,14 @@ function NewVisitDialog() {
   } = useForm();
   useEffect(() => {
     const fetchRealStates = async () => {
-      const data = await getInvestiments();
-      setRealStates(data);
+      const referenciaEmpreendiemtnos = ref(database, `/empreendimentos`);
+      await onValue(referenciaEmpreendiemtnos, (snapshot) => {
+        const data = snapshot.val();
+        if (data !== null) {
+          setRealStates(Object.values(data));
+        } else {
+        }
+      });
     };
 
     fetchRealStates();
@@ -66,7 +71,7 @@ function NewVisitDialog() {
       const visitId = v4();
       await scheduleVisit(visitId, data);
       queryClient.invalidateQueries({ queryKey: ["visits"] });
-
+      queryClient.invalidateQueries({ queryKey: ["investiments"] });
       reset();
       setAvailable(false);
     } else {

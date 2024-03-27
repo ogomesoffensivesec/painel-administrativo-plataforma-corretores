@@ -1,7 +1,7 @@
 import { toast } from "@/components/ui/use-toast";
 import { database } from "@/database/config/firebase";
-import { get, push, ref, remove, set, update } from "firebase/database";
-import { v4 } from "uuid";
+import { sendMessage } from "@/services/whatsapp.bot";
+import { get, ref, remove, set, update } from "firebase/database";
 
 async function fetchVisits() {
   const referenciaDatabase = ref(database, "/visitas");
@@ -84,7 +84,8 @@ export async function scheduleVisit(visitId, data) {
       corretor: corretor,
       createdAt: createdAt,
     };
-    if (realState.chaves && realState.chaves === 0) {
+
+    if (realStateJSON.chaves === 0) {
       toast({
         title: "Chaves sendo utilizadas",
         description: "Todas as chaves deste imóvel",
@@ -92,6 +93,15 @@ export async function scheduleVisit(visitId, data) {
       });
       return;
     }
+    const referenciaEmpreendimento = ref(
+      database,
+      `/empreendimentos/${realStateJSON.id}`
+    );
+    const updateKeys = parseInt(realStateJSON.chaves) - 1;
+    const snap = await update(referenciaEmpreendimento, {
+      chaves: updateKeys,
+    });
+    console.log(snap);
     const referenciaDatabase = ref(database, `/visitas/${visitId}`);
     await set(referenciaDatabase, visit);
 
@@ -102,7 +112,7 @@ export async function scheduleVisit(visitId, data) {
       variant: "success",
     });
   } catch (error) {
-    console.log(error);
+    console.error(error.message);
   }
 }
 
@@ -119,7 +129,7 @@ export async function cancelVisit(visit, router) {
     });
     return;
   } catch (error) {
-    console.log(error);
+    console.error(error.message);
     toast({
       title: "Erro ao cancelar visita!",
       description: "Tente novamente em alguns instantes.",
@@ -166,6 +176,7 @@ export async function visitInProgress(visit) {
     corretorID: visit.corretor,
     retiradaHora: hour,
     retiradaData: data,
+    realState: visit.realState,
   };
   await set(referenciaVisitaPendente, visitaPendente);
   return;
@@ -193,43 +204,32 @@ function getCurrentTime() {
   return `${hours}:${minutes}`;
 }
 
-//  // Percorre a lista de objetos com o campo 'hour'
-//  timeList.forEach((item, index) => {
-//    const time = item.hour;
-
-//    // Comparação do horário atual com cada hora da lista
-//    if (currentTime === time) {
-//      console.log(
-//        `O horário atual ${currentTime} é igual à hora na posição ${index} da lista: ${time}`
-//      );
-//    } else {
-//      console.log(
-//        `O horário atual ${currentTime} é diferente da hora na posição ${index} da lista: ${time}`
-//      );
-//    }
-//  });
 async function verificarVisitasExpiradas() {
   try {
-    const referenciaVisita = ref(database, "/visitas-em-andamento");
-    const snapshot = await get(referenciaVisita);
-    if (snapshot.exists()) {
-      const visitasPendentes = snapshot.val();
+    const referenciaVisitasemAndamento = ref(database, "/visitas-em-andamento");
+    const referenciaCorretores = ref(database, "/corretores");
+
+    const corretores_snapshot = await get(referenciaCorretores);
+
+    const visitasPendentesSnapshot = await get(referenciaVisitasemAndamento);
+    if (visitasPendentesSnapshot.exists() && corretores_snapshot.exists()) {
+      const visitasPendentes = visitasPendentesSnapshot.val();
+      const corretores = corretores_snapshot.val();
       const currentTime = getCurrentTime();
+
       Object.values(visitasPendentes).forEach((visita) => {
         const time = visita.retiradaHora;
         const timeNotPoint = time.replace(":", "");
-        const retiradaExpirada = parseInt(timeNotPoint) + 200;
+        const retiradaExpirada = parseInt(timeNotPoint) + 1; //200 para duas horas
         const horaAtual = currentTime.replace(":", "");
 
-        console.log(
-          "O corretor deverá entregar as chaves as: " + retiradaExpirada
+        const corretor = Object.values(corretores).find(
+          (corretor_pesquisado) => corretor_pesquisado.uid === visita.corretorID
         );
-        console.log("Agora são: " + horaAtual);
+
         if (retiradaExpirada <= horaAtual) {
-          console.log(`Visita expirada ${visita.id}`);
+          sendMessage(corretor.phone, corretor.name, visita.realState.nome);
           removerVisitaPendente(visita.id, true);
-        } else {
-          console.log(`Visita dentro do horário ${visita.id}`);
         }
       });
     }
@@ -240,7 +240,7 @@ async function verificarVisitasExpiradas() {
 
 function executarVerificacaoDeVisitas() {
   verificarVisitasExpiradas();
-  setInterval(verificarVisitasExpiradas, 10 * 60 * 1000);
+  setInterval(verificarVisitasExpiradas, 10000);
 }
 
 executarVerificacaoDeVisitas();
@@ -276,4 +276,3 @@ export async function removerVisitaPendente(idVisita, expired) {
     console.error("Error in removerVisitaPendente:", error);
   }
 }
-

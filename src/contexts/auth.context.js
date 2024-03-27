@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  createUserWithEmailAndPassword,
   signOut,
   signInWithEmailAndPassword, onIdTokenChanged, updateProfile
 } from "firebase/auth";

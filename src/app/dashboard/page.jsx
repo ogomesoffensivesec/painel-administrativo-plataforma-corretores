@@ -1,9 +1,7 @@
 "use client";
 
 import DashboardVisit from "@/components/dashboard/dashboard-mark-visit";
-import DashboardNotifications from "@/components/dashboard/dashboard-notifications";
-import { Bell, Calendar } from "lucide-react";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { Bell } from "lucide-react";
 import {
   Popover,
   PopoverContent,

@@ -7,13 +7,11 @@ import {
 } from "@/components/ui/dialog";
 
 import { Button } from "../../ui/button";
-import { get, ref, update } from "firebase/database";
+import { ref, update } from "firebase/database";
 import { database } from "@/database/config/firebase";
 import { toast } from "@/components/ui/use-toast";
 import { useQueryClient } from "react-query";
 import { getVisits, visitInProgress } from "./visitas-data";
-import { sendMessage } from "@/services/whatsapp.bot";
-import useData from "@/hooks/useData";
 
 // const cancelarTemporizador = (timer) => {
 //   if (timer) {

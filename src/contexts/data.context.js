@@ -4,7 +4,6 @@ import { toast } from "@/components/ui/use-toast";
 import { database, storage } from "@/database/config/firebase";
 import { get, off, onValue, ref, remove, set, update } from "firebase/database";
 import { deleteObject, getDownloadURL, listAll, ref as storageRef, uploadBytes } from 'firebase/storage';
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createContext, useEffect, useState } from "react";
 import { v4 } from "uuid";
@@ -239,6 +238,7 @@ export function DataProvider({ children }) {
           const data = snapshot.val();
           if (data !== null) {
             setEmpreendimentos(Object.values(data));
+            getInvestiments()
           } else {
             setEmpreendimentos([]);
           }
