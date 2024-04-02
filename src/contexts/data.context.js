@@ -204,9 +204,7 @@ export function DataProvider({ children }) {
         title: 'Empreendimento excluído com sucesso!',
         variant: 'success'
       });
-      setTimeout(() => {
-        router.push('/dashboard/empreendimentos');
-      }, 1000);
+      router.push('/dashboard/empreendimentos');
       return;
     } catch (error) {
       console.error(error);
