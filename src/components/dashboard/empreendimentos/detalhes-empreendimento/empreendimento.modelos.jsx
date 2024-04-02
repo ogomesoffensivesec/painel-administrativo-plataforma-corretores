@@ -82,6 +82,15 @@ function Modelos({ modelos, empreendimentoID }) {
             {editMode ? (
               <div className="space-y-3 px-1">
                 <div>
+                  <Label htmlFor={`area_construida-${index}`}>Preço:</Label>
+                  <Input
+                    type="text"
+                    id={`price-${index}`}
+                    value={editedModel.price}
+                    onChange={(e) => handleInputChange("price", e.target.value)}
+                  />
+                </div>
+                <div>
                   <Label htmlFor={`area_construida-${index}`}>
                     Área Construída:
                   </Label>
