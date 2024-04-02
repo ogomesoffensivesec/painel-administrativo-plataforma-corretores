@@ -1,5 +1,6 @@
-"use client";
-import React, { useState } from "react";
+import { useState } from "react";
+import { ref as storageRef, deleteObject } from "firebase/storage";
+
 import {
   Accordion,
   AccordionContent,
@@ -9,8 +10,11 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, Expand, Plus } from "lucide-react";
 import Link from "next/link";
+import { database, storage } from "@/database/config/firebase";
+import { ref, update } from "firebase/database"; // Importe a função 'update' para atualizar o estado no Realtime Database
+import AdicionarDocumentos from "./empreendimento.adicionar.documentos";
 
 const generateFakeArray = (length) => {
   const fakeArray = [];
@@ -24,7 +28,7 @@ const generateFakeArray = (length) => {
   return fakeArray;
 };
 
-function Documents({ modelos }) {
+function Documents({ modelos, empreendimentoID }) {
   const fakeArray = generateFakeArray(8);
   const [loading, setLoading] = useState(false);
 
@@ -39,7 +43,7 @@ function Documents({ modelos }) {
       link.click();
       toast({
         title: "Documentos baixados!",
-        description: "Você acaba de baixar os documentos do imóvel!",
+        description: "Você acabou de baixar os documentos do imóvel!",
         variant: "success",
       });
     } catch (error) {
@@ -52,23 +56,64 @@ function Documents({ modelos }) {
       setLoading(false);
     }
   };
+
+  const deleteDocument = async (docID, counter) => {
+    const modelo = modelos[counter];
+    const id = modelo.id;
+    try {
+      // const documentoRef = storageRef(
+      //   storage,
+      //   `/empreendimentos/${empreendimentoID}/modelos/${id}/documentos/${docID}`
+      // );
+
+      // await deleteObject(documentoRef);
+
+      // Remova o documento do array 'documentos' do modelo
+      const updatedModelos = [...modelos];
+      updatedModelos[counter].documentos = updatedModelos[
+        counter
+      ].documentos.filter((doc) => doc.id !== docID);
+
+      const refDatabase = ref(
+        database,
+        `/empreendimentos/${empreendimentoID}/modelos/${counter}`
+      );
+      // Converta o array de modelos para um objeto
+      const modelosObj = updatedModelos.reduce((acc, curr) => {
+        acc[curr.id] = curr;
+        return acc;
+      }, {});
+      console.log(`Updating: `);
+      console.log(modelosObj);
+      await update(refDatabase, modelo);
+
+      console.log("Documento excluído com sucesso!");
+    } catch (error) {
+      console.error("Erro ao excluir o documento:", error);
+    }
+  };
+
   return (
     <Accordion type="single" collapsible>
       {modelos.map((modelo, index) => (
         <AccordionItem key={index} value={`item-${index}`}>
-          <AccordionTrigger>
-            <span>
-              Documentos do modelo {index + 1} -{" "}
-              {"R$ " +
-                modelo.price.toLocaleString("pt-br", {
-                  style: "currency",
-                  currency: "BRL",
-                })}
+          <AccordionTrigger className="py-2">
+            <span className="flex items-center gap-2">
+              Documentos do modelo {index + 1} - clique aqui para expandir
+              <Expand size={14} className="text-blue-500 " />
             </span>
           </AccordionTrigger>
           <AccordionContent className="space-y-3">
             <div className="w-full flex justify-between items-center mb-8">
-              <span>Resumo de todos os documentos do empreendimento</span>
+              <div className="w-full flex justify-between items-center">
+                <span>Resumo de todos os documentos do empreendimento</span>
+                <AdicionarDocumentos
+                  empreendimentoId={empreendimentoID}
+                  modeloId={modelo.id}
+                  modelo={modelo}
+                  modeloIndex = {index}
+                />
+              </div>
               {modelo.documentos && (
                 <Button
                   type="button"
@@ -90,15 +135,26 @@ function Documents({ modelos }) {
                         className="w-full flex justify-between items-center"
                       >
                         <span className="capitalize">{documento.name}</span>
-                        <Button size="sm" type="button">
-                          <Link
-                            href={documento.url}
-                            target="__blank"
-                            rel="noopener noreferrer"
+                        <div className="flex gap-2">
+                          <Button size="sm" type="button">
+                            <Link
+                              href={documento.url}
+                              target="__blank"
+                              rel="noopener noreferrer"
+                            >
+                              Baixar documento
+                            </Link>
+                          </Button>
+                          <Button
+                            size="sm"
+                            type="button"
+                            variant="destructive"
+                            className="px-5"
+                            onClick={() => deleteDocument(documento.id, index)}
                           >
-                            Baixar documento
-                          </Link>
-                        </Button>
+                            Apagar
+                          </Button>
+                        </div>
                       </li>
                     );
                   })}

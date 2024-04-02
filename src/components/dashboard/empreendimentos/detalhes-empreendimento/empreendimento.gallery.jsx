@@ -20,7 +20,7 @@ import {
 import Image from "next/image";
 import useData from "@/hooks/useData";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Delete, Grid, LayoutDashboard, Trash } from "lucide-react";
+import { Delete, Grid, LayoutDashboard, Trash, Undo } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 function Gallery({ modelos, setGrid, grid, setModelo, setImage }) {
@@ -56,17 +56,30 @@ function Gallery({ modelos, setGrid, grid, setModelo, setImage }) {
               </SelectGroup>
             </SelectContent>
           </Select>
-          <Button
-            size="sm"
-            className=" w-full gap-3 "
-            onClick={() => {
-              setGrid(!grid);
-              setImage(images);
-            }}
-          >
-            <Grid size={12} color="white" />
-            Grade de imagens
-          </Button>
+          {!grid ? (
+            <Button
+              size="sm"
+              className=" w-full gap-3 "
+              onClick={() => {
+                setGrid(!grid);
+                setImage(images);
+              }}
+            >
+              <Grid size={12} color="white" />
+              Grade de imagens
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              className=" w-full gap-3 "
+              onClick={() => {
+                setGrid(!grid);
+              }}
+            >
+              <Undo size={12} color="white" />
+              Voltar
+            </Button>
+          )}
         </div>
 
         <CarouselContent>

@@ -25,6 +25,7 @@ import MenuEmpreendimento from "@/components/dashboard/empreendimentos/detalhes-
 import VerificarChaves from "@/components/dashboard/empreendimentos/detalhes-empreendimento/empreendimento.verify.keys";
 import { UsersProvider } from "@/contexts/user.context";
 import GridGaleria from "@/components/dashboard/empreendimentos/detalhes-empreendimento/empreendimento.grid.galeria";
+import { QueryClient, QueryClientProvider, useQueryClient } from "react-query";
 function Page({ params }) {
   const id = params.empreendimentoId;
   const { user } = useAuth();
@@ -89,7 +90,7 @@ function Page({ params }) {
   return Object.keys(empreendimento).length > 0 ? (
     <UsersProvider>
       <div className="w-full h-screen p-10 flex  flex-col  items-center">
-        <MenuEmpreendimento user={user} />
+        <MenuEmpreendimento user={user} empreendimento={empreendimento} />
         <VerificarChaves open={open} id={id} setOpen={setOpen} />
         <div className="w-full flex justify-center items-center gap-6">
           <div className="w-1/3 h-full flex flex-col  ">

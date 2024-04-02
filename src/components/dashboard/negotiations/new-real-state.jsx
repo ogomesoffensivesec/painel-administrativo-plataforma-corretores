@@ -887,15 +887,17 @@ function NewNegotiationDialog() {
               >
                 <X size={16} /> Cancelar
               </DialogClose>
-              <Button
-                type="submit"
-                className="flex justify-center items-center gap-1 "
-                disabled={loading}
-              >
-                <Plus size={16} />
-                {!loading && " Novo empreendimento"}
-                {loading && "Cadastrando..."}
-              </Button>
+              {modelos.length > 0 && (
+                <Button
+                  type="submit"
+                  className="flex justify-center items-center gap-1 "
+                  disabled={loading}
+                >
+                  <Plus size={16} />
+                  {!loading && " Novo empreendimento"}
+                  {loading && "Cadastrando..."}
+                </Button>
+              )}
             </DialogFooter>
           </form>
         </Form>

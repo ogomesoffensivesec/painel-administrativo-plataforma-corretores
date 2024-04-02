@@ -7,7 +7,6 @@ import Modelos from "./empreendimento.modelos";
 function TabsOptions({ empreendimento }) {
   const { modelos } = empreendimento;
 
-  console.log(empreendimento);
   return (
     <Tabs defaultValue="models" className="w-full">
       <TabsList>
@@ -16,10 +15,16 @@ function TabsOptions({ empreendimento }) {
         {/* <TabsTrigger value="negotiations">Negociações</TabsTrigger> */}
       </TabsList>
       <TabsContent value="models">
-        <Modelos modelos={modelos} />
+        <Modelos
+          modelos={modelos}
+          empreendimentoID={empreendimento && empreendimento.id}
+        />
       </TabsContent>
       <TabsContent value="documents">
-        <Documents modelos={modelos} />
+        <Documents
+          modelos={modelos}
+          empreendimentoID={empreendimento && empreendimento.id}
+        />
       </TabsContent>
       {/* <TabsContent value="negotiations">
         <EmpreendimentoNegotiations />
