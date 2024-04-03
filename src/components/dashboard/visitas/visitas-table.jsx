@@ -26,9 +26,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Send } from "lucide-react";
+import { Send, SendHorizonal } from "lucide-react";
 import { sendMessage } from "@/services/whatsapp.bot";
 import useData from "@/hooks/useData";
+import { ref, update } from "firebase/database";
+import { database } from "@/database/config/firebase";
+import { toast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 
 function TabelaVisitas() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -101,6 +105,40 @@ function TabelaVisitas() {
     setSelectedId(id);
     setOpenFinalizar(true);
   };
+//   async function getCorretor(corretorID) {
+//    const referenciaCorretor = ref(database, `/corretores/${corretorID}`);
+//    const snapshot = await get(referenciaCorretor);
+
+//    if (snapshot.exists()) {
+//      const corretorEncontrado = snapshot.val();
+//      return corretorEncontrado;
+//    }
+//  }
+  async function confirmarAgendamento(visitaID) {
+    try {
+      const referenciaVisita = ref(database, `/visitas/${visitaID}`);
+      await update(referenciaVisita, {
+        status: "Aguardando retirada de chaves",
+      });
+      queryClient.invalidateQueries({ queryKey: ["visits"] });
+
+     
+      toast({
+        title: "Agendamento confirmado!",
+        description: "Envie um lembre ao corretor",
+        variant: "success",
+        action: (
+          <ToastAction
+            altText="Enviar mensagem"
+            className="flex gap-2 justify-center"
+          >
+            <SendHorizonal size={15} />
+            Enviar mensagem
+          </ToastAction>
+        ),
+      });
+    } catch (error) {}
+  }
 
   return (
     <div className="w-full">
@@ -182,11 +220,21 @@ function TabelaVisitas() {
 
                     {!visit.finalizada && (
                       <>
+                        {visit.status ===
+                          "Aguardando confirmação da construtora" && (
+                          <Button
+                            onClick={() => confirmarAgendamento(visit.id)}
+                            size="xs"
+                            className="text-xs px-3 py-1 w-[160px]"
+                          >
+                            Confirmar Agendamento
+                          </Button>
+                        )}
                         {visit.status === "Aguardando retirada de chaves" && (
                           <Button
                             onClick={() => selecionarConfirmar(visit.id)}
                             size="xs"
-                            className="text-xs px-3 py-1 w-[120px]"
+                            className="text-xs px-3 py-1 w-[160px]"
                           >
                             Confirmar retirada
                           </Button>
@@ -195,7 +243,7 @@ function TabelaVisitas() {
                           <Button
                             onClick={() => selecionarFinalizar(visit.id)}
                             size="xs"
-                            className="text-xs px-3 py-1 w-[120px]"
+                            className="text-xs px-3 py-1 w-[160px]"
                           >
                             Finalizar visita
                           </Button>

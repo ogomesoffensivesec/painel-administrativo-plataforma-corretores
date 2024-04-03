@@ -19,7 +19,7 @@ function VisitLogger({ visit }) {
   };
   return (
     <Dialog>
-      <DialogTrigger className=" w-[120px] bg-amber-600 inline-flex items-center justify-center whitespace-nowrap rounded-md  font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 px-3 py-1 text-xs text-white">
+      <DialogTrigger className=" w-[160px] bg-amber-600 inline-flex items-center justify-center whitespace-nowrap rounded-md  font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 px-3 py-1 text-xs text-white">
         <HistoryIcon size={14} className="mr-1" />
         Histórico
       </DialogTrigger>
