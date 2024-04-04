@@ -87,7 +87,7 @@ function Page({ params }) {
     downloadAllFilesFromFolder();
   };
 
-  return Object.keys(empreendimento).length > 0 ? (
+  return empreendimento && Object.keys(empreendimento).length > 0 ? (
     <UsersProvider>
       <div className="w-full h-screen p-10 flex  flex-col  items-center">
         <MenuEmpreendimento user={user} empreendimento={empreendimento} />

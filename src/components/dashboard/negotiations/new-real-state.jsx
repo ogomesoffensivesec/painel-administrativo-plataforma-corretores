@@ -16,6 +16,7 @@ import {
   Trash,
   X,
   XCircle,
+  XCircleIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -53,7 +54,7 @@ function NewNegotiationDialog() {
   const [viewMode, setViewMode] = useState(false);
   const [newNames, setNewNames] = useState({});
   const [documentos, setDocumentos] = useState([]);
-
+  const [saveDocument, setSaveDocument] = useState(false);
   const { toast } = useToast();
   const [model, setModel] = useState({
     id: v4(),
@@ -113,6 +114,10 @@ function NewNegotiationDialog() {
   };
 
   function renameDocuments() {
+    if (saveDocument) {
+      setSaveDocument(false);
+      return;
+    }
     if (!newNames || typeof newNames !== "object" || Array.isArray(newNames)) {
       console.error(
         "Por favor, forneça um objeto de novos nomes para os documentos."
@@ -134,7 +139,12 @@ function NewNegotiationDialog() {
       }
     });
 
-    console.log(model.documentos);
+    toast({
+      title: "Documentos salvos com sucesso!",
+      variant: "success",
+    });
+    setSaveDocument(!saveDocument);
+
     return model.documentos;
   }
 
@@ -149,17 +159,6 @@ function NewNegotiationDialog() {
     const zipContent = await zip.generateAsync({ type: "blob" });
 
     return zipContent;
-  };
-
-  function formatarMoeda(valor) {
-    const formated = parseFloat(valor).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-    return formated;
-  }
-  const handleResetFields = () => {
-    reset();
   };
 
   const onSubmit = async (data) => {
@@ -246,7 +245,9 @@ function NewNegotiationDialog() {
         return;
     }
   };
-
+  const handleResetFields = () => {
+    reset();
+  };
   const apagarModelo = (index) => {
     setModelos((prevModelos) => {
       const updateModelos = [...prevModelos];
@@ -268,6 +269,8 @@ function NewNegotiationDialog() {
     if (!model.price) errors.push("Por favor, preencha o preço do imóvel.");
     if (!model.area_total)
       errors.push("Por favor, preencha a área total do imóvel.");
+    if (!model.lavabos)
+      errors.push("Por favor, preencha a quantidade de lavabos.");
     if (!model.area_construida)
       errors.push("Por favor, preencha a área construída do imóvel.");
     if (model.type === "apartamento" && !model.numeroApto)
@@ -586,7 +589,7 @@ function NewNegotiationDialog() {
                 <ScrollArea className="h-[300px] w-full">
                   <Card className="py-4">
                     {!viewMode && (
-                      <CardContent className="space-y-2">
+                      <CardContent className="space-y-4">
                         <div className="w-full flex gap-2 items-center justify-between mb-3">
                           <span className="text-sm">
                             Criando um modelo de imóvel
@@ -660,7 +663,16 @@ function NewNegotiationDialog() {
                             />
                           </div>
                         </div>
-
+                        <div className="w-full flex items-center gap-4 ">
+                          <Label htmlFor="suites">Lavabos</Label>
+                          <Input
+                            id="lavabos"
+                            type="number"
+                            name="lavabos"
+                            value={model.lavabos}
+                            onChange={changeModelInputs}
+                          />
+                        </div>
                         <div className="w-full flex gap-2">
                           <div className="space-y-1">
                             <Label htmlFor="vagas">Vagas</Label>
@@ -771,15 +783,18 @@ function NewNegotiationDialog() {
                                 </div>
                               )
                             )}
-                          {model.documentos && (
-                            <div className="  flex justify-center">
+                          {model.documentos && model.documentos.length > 0 && (
+                            <div className="flex justify-center mt-4">
                               <Button
                                 size="sm"
                                 type="button"
                                 onClick={renameDocuments}
-                                className="w-[100px] mt-3"
+                                variant={
+                                  saveDocument ? "destructive" : "default"
+                                }
+                                className={`w-[150px]  `}
                               >
-                                Salvar
+                                {saveDocument ? "Voltar" : "Salvar"}
                               </Button>
                             </div>
                           )}
@@ -832,7 +847,11 @@ function NewNegotiationDialog() {
                               className="w-full flex justify-between items-center"
                               key={index}
                             >
-                              <span>{modelo["area_construida"]}m²</span>
+                              <span>
+                                {modelo.type === "apartamento"
+                                  ? "Apartamento " + modelo.numeroApto
+                                  : "Modelo " + (index + 1)}{" "}
+                              </span>
                               <Button
                                 type="button"
                                 variant="destructive"

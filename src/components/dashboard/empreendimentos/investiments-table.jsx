@@ -85,7 +85,7 @@ function TabelaInvestimentos() {
                     })}
                   </TableCell> */}
                   <TableCell className="capitalize">
-                    {investiment.modelos[0].price}
+                    {investiment.modelos && investiment.modelos[0].price}
                   </TableCell>
                   <TableCell className="capitalize">
                     {investiment.publicado ? "Publicado" : "Não publicado"}

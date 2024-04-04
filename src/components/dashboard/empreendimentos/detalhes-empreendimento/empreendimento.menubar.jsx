@@ -10,11 +10,12 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { EyeIcon, Pencil, User } from "lucide-react";
+import { EyeIcon, LayoutDashboard, Pencil, User } from "lucide-react";
 import ConfirmaExcluirEmpreendimento from "./empreendimento.excluir.dialog";
 import CompartilharCorretores from "./empreendimento.corretores.compartilhar";
 import { useRouter } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "react-query";
+import NovoModelo from "./empreendimento.novo.modelo.dialog";
 
 function MenuEmpreendimento({ user, empreendimento }) {
   const queryClient = new QueryClient();
@@ -31,8 +32,9 @@ function MenuEmpreendimento({ user, empreendimento }) {
                 <Pencil size={16} className="text-blue-600" />
               </MenubarItem> */}
               <ConfirmaExcluirEmpreendimento />
-
+              <NovoModelo />
               <MenubarItem disabled>Acessar câmeras ao vivo</MenubarItem>
+
               <MenubarSeparator />
               <MenubarSub>
                 <MenubarSubTrigger>Compartilhar</MenubarSubTrigger>

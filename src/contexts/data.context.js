@@ -194,7 +194,6 @@ export function DataProvider({ children }) {
         await Promise.all(res.items.map(async (itemRef) => {
           await deleteObject(itemRef);
 
-
         }));
       });
 
@@ -205,6 +204,7 @@ export function DataProvider({ children }) {
         variant: 'success'
       });
       router.push('/dashboard/empreendimentos');
+      setEmpreendimento({})
       return;
     } catch (error) {
       console.error(error);
@@ -303,6 +303,77 @@ export function DataProvider({ children }) {
     }
 
   }
+
+
+  async function novoModelo(modelo) {
+
+    try {
+      const empreendimentoId = empreendimento.id
+      // documents, empreendimentoId, modeloId
+      // file, empreendimentoId, modeloId
+      const referenciaModelos = ref(database, `/empreendimentos/${empreendimentoId}/modelos`);
+
+      const snapshot = await get(referenciaModelos);
+      const modelosAtuais = snapshot.val() || [];
+
+      const imagensEnviadas = await uploadImages(modelo.imagens, empreendimentoId, modelo.id);
+      const documentosEnviados = await uploadDocuments(modelo.documentos, empreendimentoId, modelo.id);
+      const arquivoDocumentos = await uploadFile(modelo.fileDocument, empreendimentoId, modelo.id);
+      const arquivoImagens = await uploadFile(modelo.fileImage, empreendimentoId, modelo.id);
+
+      modelo.documentos = documentosEnviados
+      modelo.imagens = imagensEnviadas
+      modelo.arquivoDocumentos = arquivoDocumentos
+      modelo.arquivoImagens = arquivoImagens
+      console.log(imagensEnviadas);
+      console.log(documentosEnviados);
+      console.log(arquivoDocumentos);
+      console.log(arquivoImagens);
+      modelosAtuais.push(modelo)
+      await set(referenciaModelos, modelosAtuais)
+
+      toast({
+        title: 'Novo modelo adicionado!',
+        variant: 'success'
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro ao adicionar novo modelo!',
+        description: 'Houve um erro ao adicionar um novo modelo. Tente mais tarde!',
+        variant: 'destructive'
+      });
+      console.error('Erro ao adicionar novo modelo:', error);
+    }
+  }
+
+
+  async function apagarModelo(modeloID) {
+    const empreendimentoID = empreendimento.id
+    const referenciaModelos = ref(database, `/empreendimentos/${empreendimentoID}/modelos`)
+    const snapshot = await get(referenciaModelos)
+
+
+    try {
+      if (snapshot.exists()) {
+        let modelosAtuais = snapshot.val()
+        modelosAtuais = modelosAtuais.filter(modeloFiltrado => modeloFiltrado.id !== modeloID)
+        await set(referenciaModelos, modelosAtuais)
+        toast({
+          title: 'Modelo excluído com sucesso!',
+          variant: 'success'
+        })
+      }
+    } catch (error) {
+
+      console.error(error.message)
+      toast({
+        title: 'Erro ao excluir modelo!',
+        description: 'Houve um erro ao excluir um modelo. Tente novamente!',
+        variant: 'destructive'
+      })
+    }
+  }
+
   return (
     <DataContext.Provider value={{
       create,
@@ -319,7 +390,8 @@ export function DataProvider({ children }) {
       publicarEmpreendimento,
       compartilharWhatsapp,
       addNewImagesToModel,
-      visitasPendentes
+      visitasPendentes,
+      novoModelo, apagarModelo
     }}>
       {children}
     </DataContext.Provider>

@@ -12,11 +12,13 @@ import { Label } from "@/components/ui/label";
 import { ref, update } from "firebase/database";
 import { database } from "@/database/config/firebase";
 import { toast } from "@/components/ui/use-toast";
+import useData from "@/hooks/useData";
 
 function Modelos({ modelos, empreendimentoID }) {
   const [editMode, setEditMode] = useState(false);
   const [editedModel, setEditedModel] = useState(null);
   const [indexModel, setIndexModel] = useState();
+  const { apagarModelo } = useData();
   const toggleEditMode = (model, index) => {
     // Verifica se o modelo atual é o mesmo que o modelo em edição
     const isEditing = editedModel && editedModel.id === model.id;
@@ -220,6 +222,7 @@ function Modelos({ modelos, empreendimentoID }) {
                 <Button
                   type="button"
                   size="xs"
+                  onClick={() => apagarModelo(modelo.id)}
                   variant="destructive"
                   className="flex gap-1  px-3 py-1 items-center justify-center text-white"
                 >
