@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { Button } from "../../ui/button";
-import { ref, update } from "firebase/database";
+import { get, ref, update } from "firebase/database";
 import { database } from "@/database/config/firebase";
 import { toast } from "@/components/ui/use-toast";
 import { useQueryClient } from "react-query";
@@ -21,7 +21,14 @@ import { getVisits, visitInProgress } from "./visitas-data";
 //     "timerRunning=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 // };
 
-function ConfirmarRetirada({ id, open, setOpen, loading, setLoading, setTimer }) {
+function ConfirmarRetirada({
+  id,
+  open,
+  setOpen,
+  loading,
+  setLoading,
+  setTimer,
+}) {
   const queryClient = useQueryClient();
   let timer;
 
@@ -38,53 +45,43 @@ function ConfirmarRetirada({ id, open, setOpen, loading, setLoading, setTimer })
         date: new Date().toISOString(),
       });
 
-      const referenciaEmpreendiemtnos = ref(
+      const referenciaEmpreendimentos = ref(
         database,
         `/empreendimentos/${visit.realState.id}`
       );
+      const snapshot = await get(referenciaEmpreendimentos);
+      if (snapshot.exists()) {
+        const empreendimento = snapshot.val();
 
-      await update(referenciaEmpreendiemtnos, {
-        chaves: parseInt(visit.realState.chaves) - 1,
-      });
+        if (!empreendimento.chaves) {
+          toast({
+            title: "Chaves não definidas",
+            description:
+              "Este imóvel ainda não teve sua quantidade de chaves preenchida",
+            variant: "destructive",
+          });
+          return;
+        }
+        await update(referenciaEmpreendimentos, {
+          chaves: parseInt(visit.realState.chaves) - 1,
+        });
 
-      await update(referenciaDatabase, {
-        log: logAction,
-        status: "Chaves retiradas",
-      });
+        await update(referenciaDatabase, {
+          log: logAction,
+          status: "Chaves retiradas",
+        });
 
-      toast({
-        title: "As chaves do imóvel foram retiradas pelo corretor",
-        description: "Lembre-se: o tempo limite para visita é de 2 horas!",
-        variant: "success",
-      });
+        toast({
+          title: "As chaves do imóvel foram retiradas pelo corretor",
+          description: "Lembre-se: o tempo limite para visita é de 2 horas!",
+          variant: "success",
+        });
 
-      setOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["visits"] });
+        setOpen(false);
+        queryClient.invalidateQueries({ queryKey: ["visits"] });
 
-     visitInProgress(visit)
-
-
-
-      // const tempoLimite = 5000; 
-      // timer = setInterval(async () => {
-      //   logAction.push({
-      //     action: "Tempo da visita expirado!",
-      //     date: new Date().toISOString(),
-      //   });
-
-      //   await update(referenciaDatabase, {
-      //     log: logAction,
-      //     expired: true,
-      //   });
-
-      //   sendMessage("11993420447");
-      //   queryClient.invalidateQueries({ queryKey: ["visits"] });
-
-      //   clearInterval(timer);
-      // }, tempoLimite);
-
-      // // Define um cookie de sessão para indicar que o temporizador está em execução
-      // document.cookie = "timerRunning=true; path=/;";
+        visitInProgress(visit);
+      }
     } catch (error) {
       console.error(error.message);
       toast({

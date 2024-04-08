@@ -29,7 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { Send, SendHorizonal } from "lucide-react";
 import { sendMessage } from "@/services/whatsapp.bot";
 import useData from "@/hooks/useData";
-import { ref, update } from "firebase/database";
+import { get, ref, update } from "firebase/database";
 import { database } from "@/database/config/firebase";
 import { toast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
@@ -105,38 +105,59 @@ function TabelaVisitas() {
     setSelectedId(id);
     setOpenFinalizar(true);
   };
-//   async function getCorretor(corretorID) {
-//    const referenciaCorretor = ref(database, `/corretores/${corretorID}`);
-//    const snapshot = await get(referenciaCorretor);
+  //   async function getCorretor(corretorID) {
+  //    const referenciaCorretor = ref(database, `/corretores/${corretorID}`);
+  //    const snapshot = await get(referenciaCorretor);
 
-//    if (snapshot.exists()) {
-//      const corretorEncontrado = snapshot.val();
-//      return corretorEncontrado;
-//    }
-//  }
+  //    if (snapshot.exists()) {
+  //      const corretorEncontrado = snapshot.val();
+  //      return corretorEncontrado;
+  //    }
+  //  }
   async function confirmarAgendamento(visitaID) {
     try {
       const referenciaVisita = ref(database, `/visitas/${visitaID}`);
       await update(referenciaVisita, {
         status: "Aguardando retirada de chaves",
       });
-      queryClient.invalidateQueries({ queryKey: ["visits"] });
+      const actions = [];
 
-     
-      toast({
-        title: "Agendamento confirmado!",
-        description: "Envie um lembre ao corretor",
-        variant: "success",
-        action: (
-          <ToastAction
-            altText="Enviar mensagem"
-            className="flex gap-2 justify-center"
-          >
-            <SendHorizonal size={15} />
-            Enviar mensagem
-          </ToastAction>
-        ),
-      });
+      const snapshot = await get(referenciaVisita);
+      if (snapshot.exists()) {
+        const visita = snapshot.val();
+        let logAtual = Object.values(visita.log);
+
+        logAtual.push({
+          action: "Agendamento de visita confirmado pela construtora.",
+          date: new Date().toISOString(),
+        });
+        logAtual.push({
+          action: "Aguardando retirada de chaves",
+          date: new Date().toISOString(),
+        });
+
+        await update(referenciaVisita, {
+          log: logAtual,
+        });
+        queryClient.invalidateQueries({ queryKey: ["visits"] });
+
+        toast({
+          title: "Agendamento confirmado!",
+          description: "Envie um lembre ao corretor",
+          variant: "success",
+          action: (
+            <ToastAction
+              altText="Enviar mensagem"
+              className="flex gap-2 justify-center"
+            >
+              <SendHorizonal size={15} />
+              Enviar mensagem
+            </ToastAction>
+          ),
+        });
+      }
+
+      
     } catch (error) {}
   }
 
