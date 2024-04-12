@@ -187,6 +187,15 @@ function Modelos({ modelos, empreendimentoID }) {
             ) : (
               <>
                 <div>
+                  <span className="font-semibold">Preço: </span>
+                  <span>
+                    {modelo["price"].toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </span>
+                </div>
+                <div>
                   <span className="font-semibold">Área Construída: </span>
                   <span>{modelo["area_construida"]}m²</span>
                 </div>

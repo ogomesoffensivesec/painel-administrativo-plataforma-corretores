@@ -132,17 +132,7 @@ function Page({ params }) {
             <Infos empreendimento={empreendimento} />
           </div>
           <div className="w-2/3 h-full flex flex-col gap-4 px-8 ">
-            {!grid && (
-              <>
-                <div className="flex gap-6">
-                  <PriceCard price={price && price} />
-                </div>
-                <div className="mt-4">
-                  <TabsOptions empreendimento={empreendimento} />
-                </div>
-              </>
-            )}
-
+            {!grid && <TabsOptions empreendimento={empreendimento} />}
             {grid && (
               <GridGaleria
                 images={images}

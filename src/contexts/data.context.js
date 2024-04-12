@@ -135,6 +135,8 @@ export function DataProvider({ children }) {
 
   async function uploadDocuments(documents, empreendimentoId, modeloId) {
     const uploadTasks = Object.values(documents).map(async (document) => {
+      console.log('Documento');
+      console.log(document);
       const documentId = v4();
       const referenciaDocumento = storageRef(storage, `/empreendimentos/${empreendimentoId}/modelos/${modeloId}/documentos/${documentId}`);
       await uploadBytes(referenciaDocumento, document, { contentType: document.type });
@@ -257,14 +259,13 @@ export function DataProvider({ children }) {
 
 
   async function publicarEmpreendimento(emp) {
-    const { empreendimento } = emp
     try {
-      const referenciaPost = ref(database, `/publicados/${empreendimento.id}`)
-      const referenciaUpdate = ref(database, `/empreendimentos/${empreendimento.id}`)
+      const referenciaPost = ref(database, `/publicados/${emp.id}`)
+      const referenciaUpdate = ref(database, `/empreendimentos/${emp.id}`)
 
       await update(referenciaUpdate, { published: true })
 
-      await set(referenciaPost, empreendimento)
+      await set(referenciaPost, emp)
       toast({
         title: 'Sucesso ao publicar imóvel!',
         description: 'Agora os corretores poderão visualizar as informações do empreendimento!',
@@ -275,6 +276,27 @@ export function DataProvider({ children }) {
       toast({
         title: 'Erro ao publicar empreendimento!',
         description: 'Tente novamente em alguns instantes',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  async function desfazerPublicacao(id) {
+    try {
+      const referenciaPublicacao = ref(database, `/publicados/${id}`)
+      const referenciaEmpreendimento = ref(database, `/empreendimentos/${id}`)
+      await update(referenciaEmpreendimento, {
+        published: false
+      })
+      await remove(referenciaPublicacao)
+      toast({
+        title: 'Publicação removida',
+        description: 'O empreendimento foi removido na plataforma de correotores!',
+        variant: 'success'
+      })
+    } catch (error) {
+      toast({
+        title: 'Erro ao remover publicação',
         variant: 'destructive'
       })
     }
@@ -391,7 +413,8 @@ export function DataProvider({ children }) {
       compartilharWhatsapp,
       addNewImagesToModel,
       visitasPendentes,
-      novoModelo, apagarModelo
+      novoModelo, apagarModelo,
+      desfazerPublicacao
     }}>
       {children}
     </DataContext.Provider>

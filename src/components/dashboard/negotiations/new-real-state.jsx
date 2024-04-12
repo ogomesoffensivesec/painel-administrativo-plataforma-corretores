@@ -57,7 +57,7 @@ function NewNegotiationDialog() {
   const [saveDocument, setSaveDocument] = useState(false);
   const { toast } = useToast();
   const [model, setModel] = useState({
-    id: v4(),
+    id: '',
     type: "",
     quartos_simples: "",
     suites: "",
@@ -235,13 +235,10 @@ function NewNegotiationDialog() {
             return;
         }
       default:
-        console.log("Criando empreendimento...");
-        console.log("Modelos:");
-        console.log(modelos);
         await create(data, modelos);
-
         reset();
         setModelos([]);
+
         return;
     }
   };
@@ -295,9 +292,11 @@ function NewNegotiationDialog() {
       model.fileDocument = fileDocument; // Adiciona o arquivo de documento ao modelo
     }
 
+    model.id = v4()
     setModelos([...modelos, model]);
-    console.log(model);
-
+   
+    setSaveDocument(false);
+    setDocumentos([]);
     setModel({
       type: "",
       quartos_simples: "",

@@ -147,6 +147,22 @@ function Infos({ empreendimento }) {
                 }
               />
             </div>
+            <div className="w-full flex gap-1 flex-col my-2">
+              <Label className="text-xs" htmlFor="chaves">
+                Chaves:
+              </Label>
+              <Input
+                type="text"
+                id="chaves"
+                value={editedEmpreendimento.chaves}
+                onChange={(e) =>
+                  setEditedEmpreendimento({
+                    ...editedEmpreendimento,
+                    chaves: e.target.value,
+                  })
+                }
+              />
+            </div>
           </div>
           <div className="w-full flex justify-center mt-2  gap-2 pb-4 ">
             <Button
@@ -187,15 +203,27 @@ function Infos({ empreendimento }) {
               <span className="font-semibold">Editar</span>
             </Button>
           </div>
-          <span className="text-md font-light text-stone-500 mb-1 capitalize">
+          <span className="text-md font-light text-stone-600 mb-1 capitalize">
             {empreendimento.type}
           </span>
-          <span className="text-sm">
-            {empreendimento.rua} - {empreendimento.numero}
-          </span>
-          <span className="text-sm">
-            {empreendimento.bairro} - {empreendimento.cidade}
-          </span>
+          <div>
+            <span className="text-sm font-bold text-stone-700">Rua: </span>
+            <span className="text-sm">
+              {empreendimento.rua} - {empreendimento.numero}
+            </span>
+          </div>
+          <div>
+            <span className="text-sm font-bold text-stone-700">Bairro: </span>
+            <span className="text-sm">{empreendimento.bairro}</span>
+          </div>
+          <div>
+            <span className="text-sm font-bold text-stone-700">Cidade: </span>
+            <span className="text-sm">{empreendimento.cidade}</span>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-sm font-bold text-stone-700">Chaves: </span>
+            <span className="text-sm">{empreendimento.chaves}</span>
+          </div>
         </>
       )}
     </div>
