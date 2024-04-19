@@ -47,6 +47,43 @@ export function DataProvider({ children }) {
       off(referenciaEmpreendimento);
     };
   }
+  const uploadDocumentosImovel = async (documents, imovelID) => {
+
+    const uploadTasks = Object.values(documents).map(async (document) => {
+      const documentId = v4();
+
+      const referenciaDocumento = storageRef(storage, `/imoveis/${imovelID}/documentos/${documentId}`);
+      await uploadBytes(referenciaDocumento, document, { contentType: document.type });
+      const url = await getDownloadURL(referenciaDocumento);
+      return { url, id: documentId, name: document.name };
+    });
+    return await Promise.all(uploadTasks);
+  }
+
+  async function createImovel(imovel) {
+    try {
+      const imovelID = v4()
+      const documentosEnviados = await uploadDocumentosImovel(imovel.documentos, imovelID)
+      imovel.documentos = documentosEnviados
+
+      const referenciaImovel = ref(database, `/imoveis/${imovelID}`)
+      await set(referenciaImovel, imovel)
+      toast({
+        title: 'Imóvel cadastrado com sucesso',
+        description: 'Parabéns! Você acaba de cadastrar um novo imóvel!',
+        variant: 'success'
+      })
+
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: 'Erro ao cadastraro o imóvel!',
+        variant: 'destructive'
+      })
+    }
+
+  }
+
 
 
   async function create(empreendimento, modelos) {
@@ -414,7 +451,8 @@ export function DataProvider({ children }) {
       addNewImagesToModel,
       visitasPendentes,
       novoModelo, apagarModelo,
-      desfazerPublicacao
+      desfazerPublicacao,
+      createImovel
     }}>
       {children}
     </DataContext.Provider>

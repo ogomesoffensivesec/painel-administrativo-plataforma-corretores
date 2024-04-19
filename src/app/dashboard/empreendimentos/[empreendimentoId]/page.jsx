@@ -1,21 +1,10 @@
 "use client";
 import Gallery from "@/components/dashboard/empreendimentos/detalhes-empreendimento/empreendimento.gallery";
 import Infos from "@/components/dashboard/empreendimentos/detalhes-empreendimento/empreendimento.infos";
-import PriceCard from "@/components/dashboard/empreendimentos/detalhes-empreendimento/empreendimento.price";
 import TabsOptions from "@/components/dashboard/empreendimentos/detalhes-empreendimento/empreendimento.tabs";
 import { Button } from "@/components/ui/button";
-import {
-  Download,
-  Expand,
-  Eye,
-  EyeIcon,
-  Pencil,
-  Trash,
-  User,
-} from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { getDownloadURL, ref as storageRef } from "firebase/storage";
-import { storage } from "@/database/config/firebase";
+import { Download, Eye } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useData from "@/hooks/useData";
 import { useRouter } from "next/navigation";
@@ -25,7 +14,6 @@ import MenuEmpreendimento from "@/components/dashboard/empreendimentos/detalhes-
 import VerificarChaves from "@/components/dashboard/empreendimentos/detalhes-empreendimento/empreendimento.verify.keys";
 import { UsersProvider } from "@/contexts/user.context";
 import GridGaleria from "@/components/dashboard/empreendimentos/detalhes-empreendimento/empreendimento.grid.galeria";
-import { QueryClient, QueryClientProvider, useQueryClient } from "react-query";
 function Page({ params }) {
   const id = params.empreendimentoId;
   const { user } = useAuth();
