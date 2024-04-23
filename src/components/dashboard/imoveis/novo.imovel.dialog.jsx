@@ -22,28 +22,81 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusCircle, XCircle } from "lucide-react";
 import { v4 } from "uuid";
-import { ToastAction } from "@/components/ui/toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useQueryClient } from "react-query";
+
+export const listaDeDocumentos = [
+  { label: "Conta de luz - Elektro", value: "Conta de luz - Elektro" },
+  { label: "Conta de água - SAAE", value: "Conta de água - SAAE" },
+  { label: "Matrícula do imóvel", value: "Matrícula do imóvel" },
+  { label: "Certidão negativa", value: "Certidão negativa" },
+  { label: "Certidão de valor venal", value: "Certidão de valor venal" },
+  {
+    label: "Contrato de compra e venda",
+    value: "Contrato de compra e venda",
+  },
+  { label: "IPTU", value: "IPTU" },
+  { label: "Habite-se", value: "Habite-se" },
+  { label: "Condomínio", value: "Condomínio" },
+  { label: "Alteração cadastral", value: "Alteração cadastral" },
+  { label: "Contrato Social", value: "Contrato Social" },
+  { label: "Planta", value: "Planta" },
+];
 
 function NovoImovelDialog() {
   const { register, handleSubmit, reset, setValue, control } = useForm();
   const [cep, setCep] = useState("");
   const [address, setAddress] = useState({});
   const [loadingCep, setLoadingCep] = useState(false);
-  const [saveDocument, setSaveDocument] = useState(false);
   const { toast } = useToast();
   const { loading, createImovel } = useData();
-  const [arquivos, setArquivos] = useState([]);
-  const [tipoArquivo, setTipoArquivo] = useState("");
-  const [documento, setDocumento] = useState();
-  const [arquivosSalvos, setArquivosSalvos] = useState([]);
   const [arquivoZip, setArquivoZip] = useState();
   const [proprietario, setProprietario] = useState({});
+  const [documentosSelecionados, setDocumentosSelecionados] = useState({});
+  const [tiposDocumentos, setTiposDocumentos] = useState([]);
+  const [tipoDocumento, setTipoDocumento] = useState("");
+  const queryClient = useQueryClient();
+  const handleTiposDocumentos = (e) => {
+    setTipoDocumento(e.target.value);
+  };
+  const handleFileChange = (event, tipoDocumento) => {
+    const files = event.target.files;
+    const filesArray = Array.from(files);
+    setDocumentosSelecionados((prevState) => ({
+      ...prevState,
+      [tipoDocumento]: filesArray,
+    }));
+  };
+  const handleDelete = (index) => {
+    const updatedDocumentos = [...tiposDocumentos];
+    updatedDocumentos.splice(index, 1);
+    setTiposDocumentos(updatedDocumentos);
+  };
+  const handleSaveTipoDocumento = () => {
+    if (tipoDocumento === "") {
+      toast({
+        title: "Tipo de documento vazio",
+        variant: "destructive",
+      });
+      return;
+    }
+    setTiposDocumentos([...tiposDocumentos, tipoDocumento]);
+    setTipoDocumento("");
+  };
+
   const [formValues, setFormValues] = useState({
     razaoSocial: "",
     cnpj: "",
     email: "",
     telefone: "",
   });
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
@@ -221,55 +274,8 @@ function NovoImovelDialog() {
     return zipContent;
   };
 
-  const handleChangeTipoArquivo = (event) => {
-    setTipoArquivo(event.target.value);
-  };
-
-  const salvarTipoArquivo = async () => {
-    if (arquivos.length > 0) {
-      const tipoDuplicado = arquivos.find((arquivo) => arquivo === tipoArquivo);
-
-      if (tipoDuplicado) {
-        toast({
-          title: "Tipo de arquivo duplicado!",
-          description: "O tipo de arquivo será duplicado",
-          variant: "destructive",
-          action: (
-            <ToastAction
-              altText="Salvar mesmo assim"
-              onClick={() => setArquivos([...arquivos, tipoArquivo])}
-            >
-              Continuar
-            </ToastAction>
-          ),
-        });
-        return;
-      }
-    }
-    setArquivos([...arquivos, tipoArquivo]);
-  };
-
-  const handleCreateDocument = (i) => {
-    const novoDocumento = {
-      arquivo: documento,
-      tipo: arquivos[i],
-      save: true,
-      id: v4(),
-      index: i,
-    };
-
-    setArquivosSalvos([...arquivosSalvos, novoDocumento]);
-
-    setDocumento();
-  };
-
-  const handleChangeFileInput = (e) => {
-    setDocumento(e.target.files[0]);
-  };
-
   const onSubmit = async (data) => {
     const requiredFields = ["nome", "empresa", "type"];
-
     for (const field of requiredFields) {
       if (!data[field]) {
         toast({
@@ -293,11 +299,20 @@ function NovoImovelDialog() {
         return;
       }
     }
+
+    data.documentos = documentosSelecionados;
     data.id = v4();
+    data.proprietario = proprietario;
+
     await createImovel(data);
     setAddress({});
     setCep("");
+    setProprietario({});
+    setTiposDocumentos([]);
+    setDocumentosSelecionados({});
     reset();
+    console.log(Object.values(documentosSelecionados));
+    queryClient.invalidateQueries({ queryKey: ["imoveis"] });
   };
 
   const handleResetFields = () => {
@@ -338,11 +353,14 @@ function NovoImovelDialog() {
             className="flex flex-col items-center gap-5 justify-center py-4"
           >
             <Tabs defaultValue="step-1" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="step-1">Dados iniciais</TabsTrigger>
                 <TabsTrigger value="step-2">Endereço</TabsTrigger>
-                <TabsTrigger value="step-3">Documentos</TabsTrigger>
-                <TabsTrigger value="step-4">Proprietário (a)</TabsTrigger>
+                <TabsTrigger value="step-3">Tipo de documentos</TabsTrigger>
+                {tiposDocumentos.length > 0 && (
+                  <TabsTrigger value="step-4">Documentos</TabsTrigger>
+                )}
+                <TabsTrigger value="step-5">Proprietário (a)</TabsTrigger>
               </TabsList>
               <TabsContent value="step-1">
                 <Card className="py-4">
@@ -502,59 +520,74 @@ function NovoImovelDialog() {
               <TabsContent value="step-3">
                 <Card className="py-4">
                   <CardContent className="space-y-2">
-                    <div className="space-y-1 w-full flex gap-6">
-                      <div className="w-1/2 space-y-2">
-                        <Label htmlFor="tipo-de-arquivo">
-                          Tipo de documento
-                        </Label>
-                        <Input
-                          id="tipo-de-arquivo"
-                          type="text"
-                          onChange={(e) => handleChangeTipoArquivo(e)}
-                          placeholder="Tipo de arquivo"
-                        />
-                        <Button type="button" onClick={salvarTipoArquivo}>
-                          Salvar
-                        </Button>
-                      </div>
-                      <div className="w-1/2">
-                        <span className="text-md font-bold text-stone-700">
-                          Selecione os arquivos
-                        </span>
-                        <ScrollArea className="h-[400px] flex flex-col ">
-                          {arquivos.length > 0 &&
-                            arquivos.map((tipo, index) => (
-                              <div className="mt-3 ">
-                                {arquivosSalvos.length > 0 &&
-                                  arquivosSalvos.map(
-                                    (aqsalvo) => aqsalvo.save && <>salvo</>
-                                  ) && <>Salvo</>}
-                                <Label htmlFor={tipo}>{tipo}</Label>
-                                <Input
-                                  id={tipo}
-                                  onChange={handleChangeFileInput}
-                                  type="file"
-                                  accept=".pdf,.xls,.xlsx,.xlsm,image/png,image/jpeg"
-                                />
-                                <div className="w-full flex justify-end">
-                                  <Button
-                                    size="xs"
-                                    className="mt-2 "
-                                    type="button"
-                                    onClick={() => handleCreateDocument(index)}
-                                  >
-                                    Salvar documento
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                        </ScrollArea>
-                      </div>
+                    <div className="space-y-1 w-full flex flex-col gap-2">
+                      <Select onValueChange={(e) => setTipoDocumento(e)}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione um item" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {listaDeDocumentos.map((item) => (
+                            <SelectItem key={item.value} value={item.value}>
+                              {item.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Label htmlFor="typeDocument">Tipo de documento</Label>
+                      <Input
+                        type="text"
+                        id="typeDocument"
+                        value={tipoDocumento}
+                        onChange={handleTiposDocumentos}
+                        placeholder="Digite o tipo de documento"
+                      />
+                      <Button
+                        size="sm"
+                        type="button"
+                        onClick={handleSaveTipoDocumento}
+                      >
+                        Cadastrar tipo
+                      </Button>
+
+                      <ul className="space-y-2">
+                        {tiposDocumentos.length > 0 &&
+                          tiposDocumentos.map((type, index) => (
+                            <li
+                              key={index}
+                              className="w-full flex justify-between text-sm"
+                            >
+                              <span>{type}</span>
+                              <Button
+                                variant="destructive"
+                                size="xs"
+                                type="button"
+                                onClick={() => handleDelete(index)}
+                              >
+                                Apagar
+                              </Button>
+                            </li>
+                          ))}
+                      </ul>
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
               <TabsContent value="step-4">
+                {tiposDocumentos.length > 0 &&
+                  tiposDocumentos.map((tipo, index) => (
+                    <div key={index} className="mb-3">
+                      <Label htmlFor={tipo.trim()}>{tipo.trim()}</Label>
+                      <Input
+                        id={tipo.trim()}
+                        type="file"
+                        multiple
+                        onChange={(e) => handleFileChange(e, tipo)}
+                        accept=".pdf,.doc,.xlsx,.xls,.xlsm,.docx"
+                      />
+                    </div>
+                  ))}
+              </TabsContent>
+              <TabsContent value="step-5">
                 {Object.values(proprietario).length > 0 && (
                   <div>
                     <span className="font-bold ">Proprietário cadastrado</span>
@@ -576,23 +609,19 @@ function NovoImovelDialog() {
                     </div>
                   </div>
                 )}
-                {Object.values(proprietario).length === 0 && (
-                  <>
-                    <div className="space-y-1 mt-6">
-                      <label htmlFor="type">Pessoa física ou jurídica:</label>
-                      <select
-                        className="bg-gray-50 border border-gray-300 text-stone-700 text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block w-full p-2 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        value={tipoPessoa}
-                        onChange={handleTipoPessoaChange}
-                      >
-                        <option value="">Física ou Jurídica</option>
-                        <option value="pessoa-fisica">Pessoa física</option>
-                        <option value="pessoa-juridica">Pessoa jurídica</option>
-                      </select>
-                    </div>
-                    {renderizarFormulario()}
-                  </>
-                )}
+                <div className="space-y-1 mt-6">
+                  <label htmlFor="type">Pessoa física ou jurídica:</label>
+                  <select
+                    className="bg-gray-50 border border-gray-300 text-stone-700 text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block w-full p-2 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    value={tipoPessoa}
+                    onChange={handleTipoPessoaChange}
+                  >
+                    <option value="">Física ou Jurídica</option>
+                    <option value="pessoa-fisica">Pessoa física</option>
+                    <option value="pessoa-juridica">Pessoa jurídica</option>
+                  </select>
+                </div>
+                {renderizarFormulario()}
               </TabsContent>
             </Tabs>
 
@@ -609,7 +638,7 @@ function NovoImovelDialog() {
                 disabled={loading}
                 className="button-primary"
               >
-                Novo imóvel {loading ? "Cadastrando..." : ""}
+                {loading ? "Cadastrando..." : "Novo imóvel"}
               </Button>
             </DialogFooter>
           </form>

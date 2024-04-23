@@ -18,6 +18,7 @@ export function DataProvider({ children }) {
   const [visitasPendentes, setVisitasPendentes] = useState([]);
   const router = useRouter();
 
+
   function priceFilters(models) {
     let prices = [];
     if (empreendimento.id) {
@@ -48,41 +49,110 @@ export function DataProvider({ children }) {
     };
   }
   const uploadDocumentosImovel = async (documents, imovelID) => {
+    const uploadTasks = [];
+    for (const documentKey in documents) {
+      const documentList = documents[documentKey];
+      for (const document of documentList) {
+        const documentId = v4();
+        const referenciaDocumento = storageRef(storage, `/imoveis/${imovelID}/documentos/${documentId}`);
 
-    const uploadTasks = Object.values(documents).map(async (document) => {
-      const documentId = v4();
+        // Adicionar a promessa de upload à lista de tarefas
+        const uploadTask = uploadBytes(referenciaDocumento, document, { contentType: document.type })
+          .then(async () => {
+            const url = await getDownloadURL(referenciaDocumento);
+            return { url, id: documentId, name: document.name, tipo: documentKey };
+          });
 
-      const referenciaDocumento = storageRef(storage, `/imoveis/${imovelID}/documentos/${documentId}`);
-      await uploadBytes(referenciaDocumento, document, { contentType: document.type });
-      const url = await getDownloadURL(referenciaDocumento);
-      return { url, id: documentId, name: document.name };
-    });
+        uploadTasks.push(uploadTask);
+      }
+    }
+
+    // Aguardar todas as tarefas de upload concluírem antes de retornar
     return await Promise.all(uploadTasks);
   }
 
-  async function createImovel(imovel) {
-    try {
-      const imovelID = v4()
-      const documentosEnviados = await uploadDocumentosImovel(imovel.documentos, imovelID)
-      imovel.documentos = documentosEnviados
 
-      const referenciaImovel = ref(database, `/imoveis/${imovelID}`)
-      await set(referenciaImovel, imovel)
+  async function enviarNovosDocumentos(documents, imovelID) {
+    const uploadTasks = [];
+    for (const documentKey in documents) {
+      const documentList = documents[documentKey];
+      for (const document of documentList) {
+        const documentId = v4();
+        const referenciaDocumento = storageRef(storage, `/imoveis/${imovelID}/documentos/${documentId}`);
+
+        // Adicionar a promessa de upload à lista de tarefas
+        const uploadTask = uploadBytes(referenciaDocumento, document, { contentType: document.type })
+          .then(async () => {
+            const url = await getDownloadURL(referenciaDocumento);
+            return { url, id: documentId, name: document.name, tipo: documentKey };
+          });
+
+        uploadTasks.push(uploadTask);
+      }
+    }
+
+    return await Promise.all(uploadTasks);
+  }
+
+
+  async function cadastrarNovosDocumentos(imovel, newDocs) {
+    const imovelID = imovel.id
+    try {
+      setLoading(true)
+      const documentosEnviados = await enviarNovosDocumentos(newDocs, imovelID);
+      let novosDocumentos = imovel.documentos
+      const arrayDocumentos = novosDocumentos.concat(documentosEnviados)
+
+
+      const referenciaImovel = ref(database, `/imoveis/${imovelID}/documentos`);
+      await set(referenciaImovel, arrayDocumentos);
+
       toast({
-        title: 'Imóvel cadastrado com sucesso',
-        description: 'Parabéns! Você acaba de cadastrar um novo imóvel!',
+        title: 'Novos documentos inseridos com sucesso',
         variant: 'success'
-      })
+      });
 
     } catch (error) {
       console.log(error);
       toast({
-        title: 'Erro ao cadastraro o imóvel!',
+        title: 'Erro ao inserir novos documentos!',
         variant: 'destructive'
-      })
+      });
     }
-
+    finally {
+      setLoading(false)
+    }
   }
+
+
+  async function createImovel(imovel) {
+    try {
+      setLoading(true)
+      const imovelID = imovel.id
+      const documentosEnviados = await uploadDocumentosImovel(imovel.documentos, imovelID);
+      imovel.documentos = documentosEnviados;
+
+      const referenciaImovel = ref(database, `/imoveis/${imovelID}`);
+      await set(referenciaImovel, imovel);
+
+      toast({
+        title: 'Imóvel cadastrado com sucesso',
+        description: 'Parabéns! Você acaba de cadastrar um novo imóvel!',
+        variant: 'success'
+      });
+
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: 'Erro ao cadastrar o imóvel!',
+        variant: 'destructive'
+      });
+    }
+    finally {
+      setLoading(false)
+    }
+  }
+
 
 
 
@@ -452,7 +522,8 @@ export function DataProvider({ children }) {
       visitasPendentes,
       novoModelo, apagarModelo,
       desfazerPublicacao,
-      createImovel
+      createImovel,
+      cadastrarNovosDocumentos, 
     }}>
       {children}
     </DataContext.Provider>

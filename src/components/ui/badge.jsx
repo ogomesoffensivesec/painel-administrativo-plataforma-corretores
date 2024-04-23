@@ -16,7 +16,8 @@ const badgeVariants = cva(
           "border-[transparent] bg-secondary text-secondary-foreground hover:bg-secondary/80 select-none cursor-pointer",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80 select-none cursor-pointer",
-        outline: "text-foreground",
+        outline:
+          "text-foreground border-[1px] border-stone-600 bg-stone-500/40",
       },
       size: {
         default: "py-0.5",

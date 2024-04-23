@@ -13,10 +13,13 @@ import { useQuery } from "react-query";
 import PaginationComponent from "../empreendimentos/pagination";
 import { getImoveis } from "./imoveis.data";
 import { Button } from "@/components/ui/button";
+import DocumentosImovel from "./imovel.documentos";
+import InfosImoveis from "./imoveis.infos";
 
 function TabelaImoveis() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(15);
+
   const searchParams = useSearchParams();
   const {
     data: imoveis,
@@ -55,16 +58,13 @@ function TabelaImoveis() {
                   <TableCell className="capitalize">{imovel.nome}</TableCell>
                   <TableCell className="capitalize">{imovel.type}</TableCell>
                   <TableCell className="flex justify-center">
-                    <Button
-                      onClick={() => {
-                        router.push("/dashboard/imoveis/docs");
-                      }}
-                    >
-                      Documentação
-                    </Button>
+                    <DocumentosImovel
+                      documentos={imovel.documentos}
+                      imovel={imovel}
+                    />
                   </TableCell>
                   <TableCell>
-                    <Button>Informações</Button>
+                    <InfosImoveis imovel={imovel} />
                   </TableCell>
                 </TableRow>
               ))}
