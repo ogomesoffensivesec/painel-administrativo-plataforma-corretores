@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  LargeDialog,
+  LargeDialogClose,
+  LargeDialogContent,
+  LargeDialogFooter,
+  LargeDialogHeader,
+  LargeDialogTitle,
+  LargeDialogTrigger,
+} from "@/components/ui/large-dialog";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Card, CardContent } from "@/components/ui/card";
@@ -46,7 +46,7 @@ export const listaDeDocumentos = [
   { label: "Condomínio", value: "Condomínio" },
   { label: "Alteração cadastral", value: "Alteração cadastral" },
   { label: "Contrato Social", value: "Contrato Social" },
-  { label: "Planta", value: "Planta" },
+  { label: "Plantas", value: "Plantas" },
 ];
 
 function NovoImovelDialog() {
@@ -338,15 +338,15 @@ function NovoImovelDialog() {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger className="h-9 px-3  border-none outline-none w-[220px] bg-blue-600 text-white shadow hover:bg-blue-500/90 rounded-md flex gap-1 justify-center items-center text-sm">
+    <LargeDialog>
+      <LargeDialogTrigger className="h-9 px-3  border-none outline-none w-[220px] bg-blue-600 text-white shadow hover:bg-blue-500/90 rounded-md flex gap-1 justify-center items-center text-sm">
         <PlusCircle size={14} className="mr-1" />
         Novo imóvel
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Cadastrar imóvel</DialogTitle>
-        </DialogHeader>
+      </LargeDialogTrigger>
+      <LargeDialogContent>
+        <LargeDialogHeader>
+          <LargeDialogTitle>Cadastrar imóvel</LargeDialogTitle>
+        </LargeDialogHeader>
         <Form control={control}>
           <form
             onSubmit={handleSubmit(onSubmit)}
@@ -625,14 +625,14 @@ function NovoImovelDialog() {
               </TabsContent>
             </Tabs>
 
-            <DialogFooter className="flex justify-end w-full mt-3">
-              <DialogClose
+            <LargeDialogFooter className="flex justify-end w-full mt-3">
+              <LargeDialogClose
                 onClick={handleResetFields}
                 type="button"
                 className="button-destructive"
               >
                 Cancelar
-              </DialogClose>
+              </LargeDialogClose>
               <Button
                 type="submit"
                 disabled={loading}
@@ -640,11 +640,11 @@ function NovoImovelDialog() {
               >
                 {loading ? "Cadastrando..." : "Novo imóvel"}
               </Button>
-            </DialogFooter>
+            </LargeDialogFooter>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </LargeDialogContent>
+    </LargeDialog>
   );
 }
 

@@ -35,6 +35,7 @@ const formatUser = async (user) => ({
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [openDialogVerifyUser, setOpenDialogVerifyUser] = useState(false);
 
   const router = useRouter();
 
@@ -208,12 +209,8 @@ export function AuthProvider({ children }) {
     updateProfile(auth.currentUser, {
       displayName: name
     }).then(() => {
-
       handleUser(auth.currentUser)
-    }).catch((error) => {
-      // An error occurred
-      // ...
-    });
+    })
   }
 
 
@@ -255,7 +252,9 @@ export function AuthProvider({ children }) {
     handleUser,
     setUser,
     writeUserToDatabase,
-    verifyUser
+    verifyUser,
+    openDialogVerifyUser,
+    setOpenDialogVerifyUser
 
   }}>{children}</AuthContext.Provider>
 }

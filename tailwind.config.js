@@ -2,29 +2,13 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{js,jsx,tsx}',
-    './components/**/*.{js,jsx,tsx}',
-    './app/**/*.{js,jsx,tsx}',
-    './src/**/*.{js,jsx,tsx}',
+    './pages/**/*.{js,jsx}',
+    './components/**/*.{js,jsx}',
+    './app/**/*.{js,jsx}',
+    './src/**/*.{js,jsx}',
   ],
   prefix: "",
   theme: {
-    screens: {
-      'mobile': '640px',
-      // => @media (min-width: 640px) { ... }
-
-      'notebook': '768px',
-      // => @media (min-width: 768px) { ... }
-
-      'desktop': '1024px',
-      // => @media (min-width: 1024px) { ... }
-
-      'xl': '1280px',
-      // => @media (min-width: 1280px) { ... }
-
-      '2xl': '1536px',
-      // => @media (min-width: 1536px) { ... }
-    },
     container: {
       center: true,
       padding: "2rem",

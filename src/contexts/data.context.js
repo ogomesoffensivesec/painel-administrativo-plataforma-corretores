@@ -1,7 +1,7 @@
 'use client';
 
 import { toast } from "@/components/ui/use-toast";
-import { database, storage } from "@/database/config/firebase";
+import { auth, database, storage } from "@/database/config/firebase";
 import { get, off, onValue, ref, remove, set, update } from "firebase/database";
 import { deleteObject, getDownloadURL, listAll, ref as storageRef, uploadBytes } from 'firebase/storage';
 import { useRouter } from "next/navigation";
@@ -48,6 +48,27 @@ export function DataProvider({ children }) {
       off(referenciaEmpreendimento);
     };
   }
+
+  const deletarDocumento = async (imovelId, docId,) => {
+    const referenciaDatabase = ref(database, `/imoveis/${imovelId}/documentos/`)
+    const referenciaDocumento = storageRef(storage, `/imoveis/${imovelId}/documentos/${docId}`);
+    const snapshot = await get(referenciaDatabase)
+    if (snapshot.exists()) {
+      const documentos = snapshot.val()
+      const documentosFiltrados = documentos.filter(doc => doc.id !== docId)
+      set(referenciaDatabase, documentosFiltrados).then(async () => {
+        await deleteObject(referenciaDocumento).then(() => {
+          toast({
+            title: 'Documento removido com sucesso!',
+            variant: 'success'
+          })
+        })
+      })
+    }
+
+
+
+  }
   const uploadDocumentosImovel = async (documents, imovelID) => {
     const uploadTasks = [];
     for (const documentKey in documents) {
@@ -55,14 +76,21 @@ export function DataProvider({ children }) {
       for (const document of documentList) {
         const documentId = v4();
         const referenciaDocumento = storageRef(storage, `/imoveis/${imovelID}/documentos/${documentId}`);
+        var data = new Date();
+        var dia = String(data.getDate()).padStart(2, '0');
+        var mes = String(data.getMonth() + 1).padStart(2, '0');
+        var ano = data.getFullYear();
+        const usuarioAtual = auth.currentUser.displayName
 
-        // Adicionar a promessa de upload à lista de tarefas
+
+        var dataAtual = dia + '/' + mes + '/' + ano;
+
         const uploadTask = uploadBytes(referenciaDocumento, document, { contentType: document.type })
           .then(async () => {
             const url = await getDownloadURL(referenciaDocumento);
-            return { url, id: documentId, name: document.name, tipo: documentKey };
-          });
 
+            return { url, id: documentId, name: document.name, tipo: documentKey, createdAt: dataAtual, createdBy: usuarioAtual };
+          });
         uploadTasks.push(uploadTask);
       }
     }
@@ -79,12 +107,21 @@ export function DataProvider({ children }) {
       for (const document of documentList) {
         const documentId = v4();
         const referenciaDocumento = storageRef(storage, `/imoveis/${imovelID}/documentos/${documentId}`);
+        var data = new Date();
+        var dia = String(data.getDate()).padStart(2, '0');
+        var mes = String(data.getMonth() + 1).padStart(2, '0');
+        var ano = data.getFullYear();
 
-        // Adicionar a promessa de upload à lista de tarefas
+        const usuarioAtual = auth.currentUser.displayName
+
+
+        var dataAtual = dia + '/' + mes + '/' + ano;
+
         const uploadTask = uploadBytes(referenciaDocumento, document, { contentType: document.type })
           .then(async () => {
             const url = await getDownloadURL(referenciaDocumento);
-            return { url, id: documentId, name: document.name, tipo: documentKey };
+
+            return { url, id: documentId, name: document.name, tipo: documentKey, createdAt: dataAtual, createdBy: usuarioAtual };
           });
 
         uploadTasks.push(uploadTask);
@@ -100,7 +137,8 @@ export function DataProvider({ children }) {
     try {
       setLoading(true)
       const documentosEnviados = await enviarNovosDocumentos(newDocs, imovelID);
-      let novosDocumentos = imovel.documentos
+
+      let novosDocumentos = imovel.documentos || []
       const arrayDocumentos = novosDocumentos.concat(documentosEnviados)
 
 
@@ -111,6 +149,7 @@ export function DataProvider({ children }) {
         title: 'Novos documentos inseridos com sucesso',
         variant: 'success'
       });
+      return documentosEnviados
 
     } catch (error) {
       console.log(error);
@@ -242,8 +281,7 @@ export function DataProvider({ children }) {
 
   async function uploadDocuments(documents, empreendimentoId, modeloId) {
     const uploadTasks = Object.values(documents).map(async (document) => {
-      console.log('Documento');
-      console.log(document);
+
       const documentId = v4();
       const referenciaDocumento = storageRef(storage, `/empreendimentos/${empreendimentoId}/modelos/${modeloId}/documentos/${documentId}`);
       await uploadBytes(referenciaDocumento, document, { contentType: document.type });
@@ -334,7 +372,6 @@ export function DataProvider({ children }) {
             const data = snapshot.val()
             if (data !== null) {
               setVisitasPendentes(data)
-              console.log(`Visitas: ${data}`);
             }
             else {
               setVisitasPendentes([])
@@ -454,10 +491,7 @@ export function DataProvider({ children }) {
       modelo.imagens = imagensEnviadas
       modelo.arquivoDocumentos = arquivoDocumentos
       modelo.arquivoImagens = arquivoImagens
-      console.log(imagensEnviadas);
-      console.log(documentosEnviados);
-      console.log(arquivoDocumentos);
-      console.log(arquivoImagens);
+
       modelosAtuais.push(modelo)
       await set(referenciaModelos, modelosAtuais)
 
@@ -523,7 +557,8 @@ export function DataProvider({ children }) {
       novoModelo, apagarModelo,
       desfazerPublicacao,
       createImovel,
-      cadastrarNovosDocumentos, 
+      cadastrarNovosDocumentos,
+      deletarDocumento
     }}>
       {children}
     </DataContext.Provider>

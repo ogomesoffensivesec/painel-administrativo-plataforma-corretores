@@ -7,25 +7,31 @@ import {
   ArrowLeftRight,
   Building2,
   CalendarCheck,
-  Handshake,
   HomeIcon,
   LogOut,
-  PersonStanding,
+  Pencil,
   Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Button } from "../ui/button";
 
 function ListSideBar({ userFake }) {
   const segment = useSelectedLayoutSegment();
   const [isClient, setIsClient] = useState(false);
   const [theme, setTheme] = useState("light");
   const [themeToggle, setThemeToggle] = useState(false);
-  const [selectedItem, setSelectedItem] = useState("Dashboard");
+
   const { signout } = useAuth();
-  const { user } = useAuth();
+  const { user, setOpenDialogVerifyUser } = useAuth();
 
   const changeTheme = () => {
     setThemeToggle(!themeToggle);
@@ -103,8 +109,25 @@ function ListSideBar({ userFake }) {
               height={96}
               className="rounded-full shadow object-contain"
             />
-            <div className="flex gap-1 justify-center w-full mt-4 text-stone-900 dark:text-stone-300">
-              <span>Olá, comercial </span>
+            <div className="flex gap-3 justify-center items-center w-full mt-4 text-stone-900 dark:text-stone-300">
+              <span>Olá, {user.name ? user.name : "Comercial"} </span>{" "}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="bg-none border-none shadow-none px-2"
+                      onClick={() => setOpenDialogVerifyUser(true)}
+                    >
+                      <Pencil size={16} className="text-blue-600" asChild />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Editar nome de usuário</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
           <ul className="w-full h-full flex flex-col items-center pt-8 flex-1">

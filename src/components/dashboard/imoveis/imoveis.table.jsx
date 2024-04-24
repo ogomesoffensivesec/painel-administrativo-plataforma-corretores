@@ -59,7 +59,7 @@ function TabelaImoveis() {
                   <TableCell className="capitalize">{imovel.type}</TableCell>
                   <TableCell className="flex justify-center">
                     <DocumentosImovel
-                      documentos={imovel.documentos}
+                      documentos={imovel.documentos && imovel.documentos}
                       imovel={imovel}
                     />
                   </TableCell>

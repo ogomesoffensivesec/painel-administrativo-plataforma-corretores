@@ -12,17 +12,18 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import EmpreendimentoCard from "@/components/dashboard/dashboard.card.empreendimento";
 import VisitasCard from "@/components/dashboard/dashboard.card.visitas";
+import { auth } from "@/database/config/firebase";
+import SetUserDisplayName from "@/components/dashboard/dashboard.user.displayname";
 
 export default function Home() {
-  const { user, verifyUser } = useAuth();
+  const { user, openDialogVerifyUser, setOpenDialogVerifyUser } = useAuth();
   const router = useRouter();
-  const [openDialogVerifyUser, setOpenDialogVerifyUser] = useState(false);
 
   useEffect(() => {
-    const verifyUsers = async () => {
-      const userVerified = await verifyUser();
+    const verificarDisplayNameUsuario = async () => {
+      const usuarioAtual = auth.currentUser;
 
-      if (!userVerified) {
+      if (usuarioAtual && !usuarioAtual.displayName) {
         setOpenDialogVerifyUser(true);
       }
     };
@@ -30,7 +31,7 @@ export default function Home() {
       router.push("/");
     }
     if (user) {
-      verifyUsers();
+      verificarDisplayNameUsuario();
     }
   }, [user, router]);
 
@@ -40,6 +41,10 @@ export default function Home() {
 
   return user ? (
     <div className=" w-full p-10  gap-12 flex flex-col flex-wrap bg-stone-100 dark:bg-stone-950">
+      <SetUserDisplayName
+        open={openDialogVerifyUser}
+        setOpenDialogVerifyUser={setOpenDialogVerifyUser}
+      />
       <div className="w-full flex justify-between  gap-3 md:gap-4 lg:gap-3 flex-wrap">
         {" "}
         <div className="flex gap-3">
