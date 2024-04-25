@@ -30,23 +30,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQueryClient } from "react-query";
+import { formatarParaURL } from "./imovel.documentos";
 
 export const listaDeDocumentos = [
-  { label: "Conta de luz - Elektro", value: "Conta de luz - Elektro" },
-  { label: "Conta de água - SAAE", value: "Conta de água - SAAE" },
-  { label: "Matrícula do imóvel", value: "Matrícula do imóvel" },
-  { label: "Certidão negativa", value: "Certidão negativa" },
-  { label: "Certidão de valor venal", value: "Certidão de valor venal" },
-  {
-    label: "Contrato de compra e venda",
-    value: "Contrato de compra e venda",
-  },
-  { label: "IPTU", value: "IPTU" },
-  { label: "Habite-se", value: "Habite-se" },
-  { label: "Condomínio", value: "Condomínio" },
   { label: "Alteração cadastral", value: "Alteração cadastral" },
+  { label: "Alvará de construção", value: "Alvará de construção" },
+  {
+    label: "Alvará do corpo de bombeiro",
+    value: "Alvará do corpo de bombeiro",
+  },
+  { label: "ART - RTT", value: "ART - RTT" },
+  {
+    label: "Atest. de conform. da inst. técnica",
+    value: "Atest. de conform. da inst. técnica",
+  },
+  { label: "Certidão de valor venal", value: "Certidão de valor venal" },
+  { label: "Certidão negativa", value: "Certidão negativa" },
+  { label: "Condomínio", value: "Condomínio" },
+  { label: "Conta de água - SAAE", value: "Conta de água - SAAE" },
+  { label: "Conta de luz - Elektro", value: "Conta de luz - Elektro" },
+  { label: "Contrato de compra e venda", value: "Contrato de compra e venda" },
   { label: "Contrato Social", value: "Contrato Social" },
+  { label: "Habite-se", value: "Habite-se" },
+  { label: "IPTU", value: "IPTU" },
+  { label: "Matrícula do imóvel", value: "Matrícula do imóvel" },
   { label: "Plantas", value: "Plantas" },
+  { label: "Registro de imóvel", value: "Registro de imóvel" },
 ];
 
 function NovoImovelDialog() {
@@ -68,6 +77,7 @@ function NovoImovelDialog() {
   const handleFileChange = (event, tipoDocumento) => {
     const files = event.target.files;
     const filesArray = Array.from(files);
+
     setDocumentosSelecionados((prevState) => ({
       ...prevState,
       [tipoDocumento]: filesArray,
@@ -350,16 +360,15 @@ function NovoImovelDialog() {
         <Form control={control}>
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col items-center gap-5 justify-center py-4"
+            className="flex flex-col items-center gap-5  py-1"
           >
             <Tabs defaultValue="step-1" className="w-full">
               <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="step-1">Dados iniciais</TabsTrigger>
                 <TabsTrigger value="step-2">Endereço</TabsTrigger>
                 <TabsTrigger value="step-3">Tipo de documentos</TabsTrigger>
-                {tiposDocumentos.length > 0 && (
-                  <TabsTrigger value="step-4">Documentos</TabsTrigger>
-                )}
+                <TabsTrigger value="step-4">Documentos</TabsTrigger>
+
                 <TabsTrigger value="step-5">Proprietário (a)</TabsTrigger>
               </TabsList>
               <TabsContent value="step-1">
@@ -573,7 +582,7 @@ function NovoImovelDialog() {
                 </Card>
               </TabsContent>
               <TabsContent value="step-4">
-                {tiposDocumentos.length > 0 &&
+                {tiposDocumentos.length > 0 ? (
                   tiposDocumentos.map((tipo, index) => (
                     <div key={index} className="mb-3">
                       <Label htmlFor={tipo.trim()}>{tipo.trim()}</Label>
@@ -585,7 +594,12 @@ function NovoImovelDialog() {
                         accept=".pdf,.doc,.xlsx,.xls,.xlsm,.docx"
                       />
                     </div>
-                  ))}
+                  ))
+                ) : (
+                  <div className="w-full flex justify-center h-[80px] items-center font-bold text-blue-600 text-xl">
+                    <span>Nenhum tipo/pasta cadastrado</span>
+                  </div>
+                )}
               </TabsContent>
               <TabsContent value="step-5">
                 {Object.values(proprietario).length > 0 && (
@@ -625,7 +639,7 @@ function NovoImovelDialog() {
               </TabsContent>
             </Tabs>
 
-            <LargeDialogFooter className="flex justify-end w-full mt-3">
+            <LargeDialogFooter className="flex justify-end w-full ">
               <LargeDialogClose
                 onClick={handleResetFields}
                 type="button"

@@ -4,6 +4,7 @@ import { toast } from "@/components/ui/use-toast";
 import { auth, database, storage } from "@/database/config/firebase";
 import { get, off, onValue, ref, remove, set, update } from "firebase/database";
 import { deleteObject, getDownloadURL, listAll, ref as storageRef, uploadBytes } from 'firebase/storage';
+import JSZip from "jszip";
 import { useRouter } from "next/navigation";
 import { createContext, useEffect, useState } from "react";
 import { v4 } from "uuid";
@@ -102,20 +103,20 @@ export function DataProvider({ children }) {
 
   async function enviarNovosDocumentos(documents, imovelID) {
     const uploadTasks = [];
+
     for (const documentKey in documents) {
       const documentList = documents[documentKey];
+
       for (const document of documentList) {
         const documentId = v4();
         const referenciaDocumento = storageRef(storage, `/imoveis/${imovelID}/documentos/${documentId}`);
-        var data = new Date();
-        var dia = String(data.getDate()).padStart(2, '0');
-        var mes = String(data.getMonth() + 1).padStart(2, '0');
-        var ano = data.getFullYear();
+        const data = new Date();
+        const dia = String(data.getDate()).padStart(2, '0');
+        const mes = String(data.getMonth() + 1).padStart(2, '0');
+        const ano = data.getFullYear();
+        const usuarioAtual = auth.currentUser.displayName;
+        const dataAtual = `${dia}/${mes}/${ano}`;
 
-        const usuarioAtual = auth.currentUser.displayName
-
-
-        var dataAtual = dia + '/' + mes + '/' + ano;
 
         const uploadTask = uploadBytes(referenciaDocumento, document, { contentType: document.type })
           .then(async () => {
@@ -163,7 +164,47 @@ export function DataProvider({ children }) {
     }
   }
 
+  const renomearDocumento = async (imovelId, documentoId, newName) => {
+    try {
+      const referenciaDocumento = ref(database, `/imoveis/${imovelId}/documentos/`);
+      const snapshot = await get(referenciaDocumento);
 
+      if (snapshot.exists()) {
+        let documentosRecuperados = snapshot.val();
+        let indexDocumento = documentosRecuperados.findIndex(docx => docx.id === documentoId);
+
+        if (indexDocumento !== -1) {
+          const documentoEncontrado = documentosRecuperados[indexDocumento];
+          const nomeAntigo = documentoEncontrado.name;
+          const extensaoArquivo = nomeAntigo.split('.').pop();
+          documentoEncontrado.name = `${newName}.${extensaoArquivo}`;
+
+          // Substitua o documento antigo pelo documento atualizado na lista
+          documentosRecuperados[indexDocumento] = documentoEncontrado;
+
+          // Atualize a lista de documentos no Realtime Database
+          await set(referenciaDocumento, documentosRecuperados);
+
+          // Exiba uma mensagem de sucesso
+          toast({
+            title: "Documento renomeado com sucesso!",
+            variant: 'success'
+          });
+          return extensaoArquivo
+        } else {
+          console.error('Documento com o ID especificado não foi encontrado na lista.');
+        }
+      } else {
+        console.error('Nenhum documento encontrado para o imóvel especificado.');
+      }
+    } catch (error) {
+      console.log(error.message);
+      toast({
+        title: "Erro ao renomar o documento",
+        variant: 'destructive'
+      })
+    }
+  }
   async function createImovel(imovel) {
     try {
       setLoading(true)
@@ -191,8 +232,6 @@ export function DataProvider({ children }) {
       setLoading(false)
     }
   }
-
-
 
 
   async function create(empreendimento, modelos) {
@@ -558,7 +597,8 @@ export function DataProvider({ children }) {
       desfazerPublicacao,
       createImovel,
       cadastrarNovosDocumentos,
-      deletarDocumento
+      deletarDocumento,
+      renomearDocumento
     }}>
       {children}
     </DataContext.Provider>
