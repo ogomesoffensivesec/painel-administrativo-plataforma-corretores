@@ -15,6 +15,8 @@ import VisitasCard from "@/components/dashboard/dashboard.card.visitas";
 import { auth } from "@/database/config/firebase";
 import SetUserDisplayName from "@/components/dashboard/dashboard.user.displayname";
 import { UsersProvider } from "@/contexts/user.context";
+import Imoveis from "./imoveis/page";
+import ImoveisCard from "@/components/dashboard/dashboard.card.imovel";
 
 export default function Home() {
   const { user, openDialogVerifyUser, setOpenDialogVerifyUser } = useAuth();
@@ -51,6 +53,8 @@ export default function Home() {
           {" "}
           <div className="flex gap-3">
             <EmpreendimentoCard />
+            <ImoveisCard />
+
             <VisitasCard />
           </div>
           <div>
