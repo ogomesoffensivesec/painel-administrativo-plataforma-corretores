@@ -264,7 +264,10 @@ function DocumentosImovel({ imovel, documentos }) {
                       {documentosFiltrados &&
                         documentosFiltrados.length > 0 &&
                         documentosFiltrados.map((doc, index) => (
-                          <div className="w-full flex justify-between items-center ">
+                          <div
+                            className="w-full flex justify-between items-center "
+                            key={index}
+                          >
                             {documentoParaRenomear !== index ? (
                               <Link
                                 href={doc.url}

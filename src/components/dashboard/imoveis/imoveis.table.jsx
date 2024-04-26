@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "react-query";
 import PaginationComponent from "../empreendimentos/pagination";
 import { getImoveis } from "./imoveis.data";
@@ -37,7 +37,6 @@ function TabelaImoveis() {
   const endIndex = startIndex + itemsPerPage;
   const itemsOnPage = imoveis.slice(startIndex, endIndex);
   const totalCount = imoveis.length + 1;
-  const router = useRouter();
   return (
     <div className="w-full">
       {imoveis.length > 0 && (
