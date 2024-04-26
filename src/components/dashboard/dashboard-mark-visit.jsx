@@ -1,16 +1,17 @@
-"use client";
+import { useEffect, useState } from "react";
 
-import React, { useEffect, useState } from "react";
-import { Label } from "../ui/label";
 import { useForm } from "react-hook-form";
+import useUsers from "@/hooks/useUsers";
+import { v4 } from "uuid";
+import { onValue, ref } from "firebase/database";
+import { database } from "@/database/config/firebase";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
-import useData from "@/hooks/useData";
 import { getVisits, scheduleVisit } from "./visitas/visitas-data";
 
 function DashboardVisit() {
-  const { getInvestiments, encontrarItemPorId } = useData();
   const [realStates, setRealStates] = useState([]);
+  const { users } = useUsers();
   const [loading, setLoading] = useState(false);
   const [available, setAvailable] = useState(false);
   const {
@@ -20,11 +21,16 @@ function DashboardVisit() {
     clearErrors,
     formState: { errors },
   } = useForm();
-
   useEffect(() => {
     const fetchRealStates = async () => {
-      const data = await getInvestiments();
-      setRealStates(data);
+      const referenciaEmpreendiemtnos = ref(database, `/empreendimentos`);
+      await onValue(referenciaEmpreendiemtnos, (snapshot) => {
+        const data = snapshot.val();
+        if (data !== null) {
+          setRealStates(Object.values(data));
+        } else {
+        }
+      });
     };
 
     fetchRealStates();
@@ -34,6 +40,7 @@ function DashboardVisit() {
     const { realState } = data;
     const isMissingFields =
       !data.realState ||
+      !data.corretor ||
       !data.scheduled_day ||
       !data.scheduled_month ||
       !data.scheduled_hour;
@@ -47,7 +54,8 @@ function DashboardVisit() {
     }
 
     if (available) {
-      await scheduleVisit(data);
+      const visitId = v4();
+      await scheduleVisit(visitId, data);
       reset();
       setAvailable(false);
     } else {
@@ -101,80 +109,95 @@ function DashboardVisit() {
     }
   }
   return (
-    <div className="w-full h-16 flex flex-col py-2 space-y-3 mb-10 ">
+    <div className="w-full flex flex-col py-2 space-y-3  ">
       <span className="text-xl font-bold text-stone-800 dark:text-white">
         Agendar visita ao imóvel
       </span>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex flex-col  gap-2 w-full mt-3">
-          <Label htmlFor="real-state" className="text-left w-auto ">
-            Por favor, selecione o imóvel que deseja visitar.
-          </Label>
-          <div className="w-full flex gap-3">
-            <select
-              id="real-state"
-              {...register("realState")}
-              className="flex h-9 w-1/2 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            >
-              <option value="">Selecione...</option>
-              {Object.values(realStates).map((state) => (
-                <option key={state.nome} value={JSON.stringify(state)}>
-                  {state.nome}
-                </option>
-              ))}
-            </select>
-            <select
-              id="scheduled_day"
-              {...register("scheduled_day")}
-              className="flex h-9 w-32 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            >
-              <option value="">Dia</option>
-              {diasDoMes.map((dia) => (
-                <option key={dia} value={dia}>
-                  {dia}
-                </option>
-              ))}
-            </select>
-            <select
-              id="scheduled_month"
-              {...register("scheduled_month")}
-              className="flex h-9 w-32 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            >
-              <option value="">Mês</option>
-              {mesesDoAno.map((mes, index) => (
-                <option className="capitalize" key={mes} value={index + 1}>
-                  {mes}
-                </option>
-              ))}
-            </select>
-            <select
-              id="scheduled_hour"
-              {...register("scheduled_hour")}
-              className="flex h-9 w-32 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            >
-              <option value="">Horário</option>
-              {horarios.map((hora) => (
-                <option className="capitalize" key={hora} value={hora}>
-                  {hora}
-                </option>
-              ))}
-            </select>
-            {!available && (
-              <Button className={`w-[200px] `} disabled={loading}>
-                {loading && "Verificando..."}
-
-                {!loading && !available && "Verificar disponibilidade"}
-              </Button>
-            )}
-            {available && (
-              <Button
-                className={`w-[200px] bg-emerald-600 hover:bg-emerald-800`}
+        <div className="w-full  flex flex-col  ">
+          <div className="flex flex-col  gap-2 w-full ">
+            <div className="w-full flex flex-col gap-3">
+              <select
+                id="real-state"
+                {...register("realState")}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               >
-                Agendar?
-              </Button>
-            )}
+                <option value="">Selecione...</option>
+                {Object.values(realStates).map((state) => (
+                  <option key={state.id} value={JSON.stringify(state)}>
+                    {state.nome}
+                  </option>
+                ))}
+              </select>
+              {users && Object.values(users).length > 0 && (
+                <select
+                  id="corretor"
+                  {...register("corretor")}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                >
+                  <option value="">Selecione...</option>
+                  {Object.values(users).map((user) => (
+                    <option key={user.uid} value={user.uid}>
+                      {user.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <div className="w-full flex gap-3 justify-start items-center ">
+                <select
+                  id="scheduled_day"
+                  {...register("scheduled_day")}
+                  className="flex h-9 w-32 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                >
+                  <option value="">Dia</option>
+                  {diasDoMes.map((dia) => (
+                    <option key={dia} value={dia}>
+                      {dia}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  id="scheduled_month"
+                  {...register("scheduled_month")}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                >
+                  <option value="">Mês</option>
+                  {mesesDoAno.map((mes, index) => (
+                    <option className="capitalize" key={mes} value={index + 1}>
+                      {mes}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  id="scheduled_hour"
+                  {...register("scheduled_hour")}
+                  className="flex h-9 w-32 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                >
+                  <option value="">Horário</option>
+                  {horarios.map((hora) => (
+                    <option className="capitalize" key={hora} value={hora}>
+                      {hora}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
+        {!available && (
+          <Button size="sm" className={`w-[200px] mt-4`} disabled={loading}>
+            {loading && "Verificando..."}
+            {!loading && !available && "Verificar disponibilidade"}
+          </Button>
+        )}
+        {available && (
+          <Button
+            size="sm"
+            className={`w-[200px] bg-emerald-600 hover:bg-emerald-800`}
+          >
+            Agendar?
+          </Button>
+        )}
       </form>
     </div>
   );

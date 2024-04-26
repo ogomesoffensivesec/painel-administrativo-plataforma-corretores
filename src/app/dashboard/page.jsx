@@ -14,6 +14,7 @@ import EmpreendimentoCard from "@/components/dashboard/dashboard.card.empreendim
 import VisitasCard from "@/components/dashboard/dashboard.card.visitas";
 import { auth } from "@/database/config/firebase";
 import SetUserDisplayName from "@/components/dashboard/dashboard.user.displayname";
+import { UsersProvider } from "@/contexts/user.context";
 
 export default function Home() {
   const { user, openDialogVerifyUser, setOpenDialogVerifyUser } = useAuth();
@@ -41,38 +42,40 @@ export default function Home() {
 
   return user ? (
     <div className=" w-full p-10  gap-12 flex flex-col flex-wrap bg-stone-100 dark:bg-stone-950">
-      <SetUserDisplayName
-        open={openDialogVerifyUser}
-        setOpenDialogVerifyUser={setOpenDialogVerifyUser}
-      />
-      <div className="w-full flex justify-between  gap-3 md:gap-4 lg:gap-3 flex-wrap">
-        {" "}
-        <div className="flex gap-3">
-          <EmpreendimentoCard />
-          <VisitasCard />
+      <UsersProvider>
+        <SetUserDisplayName
+          open={openDialogVerifyUser}
+          setOpenDialogVerifyUser={setOpenDialogVerifyUser}
+        />
+        <div className="w-full flex justify-between  gap-3 md:gap-4 lg:gap-3 flex-wrap">
+          {" "}
+          <div className="flex gap-3">
+            <EmpreendimentoCard />
+            <VisitasCard />
+          </div>
+          <div>
+            <Popover>
+              <PopoverTrigger className="flex items-center justify-center gap-3">
+                <Bell
+                  size={24}
+                  strokeWidth={2}
+                  className="text-blue-600 font-bold"
+                  fill="#2563eb"
+                />
+              </PopoverTrigger>
+              <PopoverContent>
+                {/* <DashboardNotifications  notifications={notifications}/> */}
+                Aqui ficará o componente de notificações
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
-        <div>
-          <Popover>
-            <PopoverTrigger className="flex items-center justify-center gap-3">
-              <Bell
-                size={24}
-                strokeWidth={2}
-                className="text-blue-600 font-bold"
-                fill="#2563eb"
-              />
-            </PopoverTrigger>
-            <PopoverContent>
-              {/* <DashboardNotifications  notifications={notifications}/> */}
-              Aqui ficará o componente de notificações
-            </PopoverContent>
-          </Popover>
-        </div>
-      </div>
 
-      <div className="w-full flex gap-10 flex-col ">
-        <DashboardVisit />
-        {/* <DashboardNotifications notifications={notifications} /> */}
-      </div>
+        <div className="w-full ">
+          <DashboardVisit />
+          {/* <DashboardNotifications notifications={notifications} /> */}
+        </div>
+      </UsersProvider>
     </div>
   ) : (
     <div className="h-screen w-full p-10  gap-12 flex items-center justify-center bg-stone-100 dark:bg-stone-950">
