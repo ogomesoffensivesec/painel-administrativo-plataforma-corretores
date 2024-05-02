@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  LargeDialog,
+  LargeDialogClose,
+  LargeDialogContent,
+  LargeDialogFooter,
+  LargeDialogHeader,
+  LargeDialogTitle,
+  LargeDialogTrigger,
+} from "@/components/ui/large-dialog";
 import {
   Eye,
   IterationCw,
@@ -40,10 +40,14 @@ import { v4 } from "uuid";
 import JSZip from "jszip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { listaDeDocumentos } from "../imoveis/novo.imovel.dialog";
 
 function NewNegotiationDialog() {
   const { register, handleSubmit, reset, setValue } = useForm();
   const form = useForm();
+  const [documentosSelecionados, setDocumentosSelecionados] = useState({});
+  const [tiposDocumentos, setTiposDocumentos] = useState([]);
+  const [tipoDocumento, setTipoDocumento] = useState("");
 
   const [cep, setCep] = useState("");
   const [numeroApto, setNumeroApto] = useState(0);
@@ -55,9 +59,10 @@ function NewNegotiationDialog() {
   const [newNames, setNewNames] = useState({});
   const [documentos, setDocumentos] = useState([]);
   const [saveDocument, setSaveDocument] = useState(false);
+  const [modeloSelecionado, setModeloSelecionado] = useState({});
   const { toast } = useToast();
   const [model, setModel] = useState({
-    id: '',
+    id: "",
     type: "",
     quartos_simples: "",
     suites: "",
@@ -69,7 +74,7 @@ function NewNegotiationDialog() {
     imagens: [],
   });
 
-  const { create, loading } = useData();
+  const { create, loading, empresas, imoveis } = useData();
   const changeModelInputs = (event) => {
     const { name, value } = event.target;
     setModel({
@@ -91,16 +96,26 @@ function NewNegotiationDialog() {
       [name]: files,
     });
   };
+  const handleSaveTipoDocumento = () => {
+    if (tipoDocumento === "") {
+      toast({
+        title: "Tipo de documento vazio",
+        variant: "destructive",
+      });
+      return;
+    }
+    setTiposDocumentos([...tiposDocumentos, tipoDocumento]);
+    setTipoDocumento("");
+  };
 
+  const handleTiposDocumentos = (e) => {
+    setTipoDocumento(e.target.value);
+  };
   const handleDocumentos = (event) => {
     const fileList = event.target.files;
     const newArquivos = Array.from(fileList).map((file) => file);
     setDocumentos([...documentos, ...newArquivos]);
     setModel({
-      ...model,
-      documentos: [...documentos, ...newArquivos],
-    });
-    console.log({
       ...model,
       documentos: [...documentos, ...newArquivos],
     });
@@ -112,7 +127,15 @@ function NewNegotiationDialog() {
       [documentoId]: newName,
     }));
   };
+  const handleFileChange = (event, tipoDocumento) => {
+    const files = event.target.files;
+    const filesArray = Array.from(files);
 
+    setDocumentosSelecionados((prevState) => ({
+      ...prevState,
+      [tipoDocumento]: filesArray,
+    }));
+  };
   function renameDocuments() {
     if (saveDocument) {
       setSaveDocument(false);
@@ -235,6 +258,7 @@ function NewNegotiationDialog() {
             return;
         }
       default:
+        data.documentos = documentosSelecionados;
         await create(data, modelos);
         reset();
         setModelos([]);
@@ -292,9 +316,9 @@ function NewNegotiationDialog() {
       model.fileDocument = fileDocument; // Adiciona o arquivo de documento ao modelo
     }
 
-    model.id = v4()
+    model.id = v4();
     setModelos([...modelos, model]);
-   
+
     setSaveDocument(false);
     setDocumentos([]);
     setModel({
@@ -333,15 +357,15 @@ function NewNegotiationDialog() {
     }
   };
   return (
-    <Dialog>
-      <DialogTrigger className="h-9 px-3  border-none outline-none w-[220px] bg-blue-600 text-white shadow hover:bg-blue-500/90 rounded-md flex gap-1 justify-center items-center text-sm">
+    <LargeDialog>
+      <LargeDialogTrigger className="h-9 px-3  border-none outline-none w-[220px] bg-blue-600 text-white shadow hover:bg-blue-500/90 rounded-md flex gap-1 justify-center items-center text-sm">
         <PlusCircle size={14} className="mr-1" />
         Novo empreendimento
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Cadastrar empreendimento</DialogTitle>
-        </DialogHeader>
+      </LargeDialogTrigger>
+      <LargeDialogContent>
+        <LargeDialogHeader>
+          <LargeDialogTitle>Cadastrar empreendimento</LargeDialogTitle>
+        </LargeDialogHeader>
         <Form {...form}>
           <form
             onSubmit={handleSubmit(onSubmit)}
@@ -350,102 +374,156 @@ function NewNegotiationDialog() {
             <Tabs defaultValue="step-1" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="step-1">Dados iniciais </TabsTrigger>
-                <TabsTrigger value="step-2">Endereço</TabsTrigger>
-                <TabsTrigger value="step-3">Modelos</TabsTrigger>
-                <TabsTrigger value="step-4">Chaves</TabsTrigger>
+
+                <TabsTrigger value="step-2">Modelos</TabsTrigger>
+                <TabsTrigger value="step-3">Tipos dos documentos</TabsTrigger>
+                <TabsTrigger value="step-4">
+                  Engenharia/Documentação
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="step-1">
                 <Card className="py-4">
-                  <CardContent className="space-y-3">
-                    <div className="space-y-1">
-                      <Label htmlFor="name">Nome do empreendimento</Label>
-                      <FormField
-                        control={form.control}
-                        name="nome"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                {...register("nome")}
-                                id="nome"
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="empresa">Empresa</Label>
-                      <FormField
-                        control={form.control}
-                        name="nome"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
+                  <ScrollArea className="h-[500px]">
+                    <CardContent className="space-y-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="name">Nome do empreendimento</Label>
+                        <FormField
+                          control={form.control}
+                          name="nome"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  {...register("nome")}
+                                  id="nome"
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="chaves">
+                          Quantidade de chaves do empreendimento
+                        </Label>
+                        <FormField
+                          control={form.control}
+                          name="chaves"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  id="chaves"
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  name="chaves"
+                                  {...register("chaves")}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="empresa">Empresa</Label>
+                        <FormField
+                          control={form.control}
+                          name="nome"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <select
+                                  {...register("empresa")}
+                                  className="bg-gray-50 border border-gray-300 text-stone-700 text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block w-full p-2  dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                >
+                                  <option className="cursor-pointer" value="">
+                                    Empresa
+                                  </option>
+
+                                  {empresas &&
+                                    empresas.map((empresa) => (
+                                      <option
+                                        className="cursor-pointer"
+                                        value={empresa}
+                                      >
+                                        {empresa.razaoSocial}
+                                      </option>
+                                    ))}
+                                </select>
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="refImovel">Referência do imóvel</Label>
+                        <FormField
+                          control={form.control}
+                          name="refImovel"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <select
+                                  {...register("refImovel")}
+                                  className="bg-gray-50 border border-gray-300 text-stone-700 text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block w-full p-2  dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                >
+                                  <option className="cursor-pointer" value="">
+                                    Referência do imóvel
+                                  </option>
+
+                                  {imoveis &&
+                                    imoveis.map((imovel) => (
+                                      <option
+                                        className="cursor-pointer"
+                                        value={imovel}
+                                      >
+                                        {imovel.nome}
+                                      </option>
+                                    ))}
+                                </select>
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="type">Tipo do empreendimento</Label>
+                        <FormField
+                          control={form.control}
+                          name="type"
+                          render={({ field }) => (
+                            <FormItem>
                               <select
-                                {...register("empresa")}
+                                {...register("type")}
                                 className="bg-gray-50 border border-gray-300 text-stone-700 text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block w-full p-2  dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                               >
                                 <option className="cursor-pointer" value="">
-                                  Empresa
+                                  Tipo do empreendimento
+                                </option>
+                                <option className="cursor-pointer" value="casa">
+                                  Casa
                                 </option>
                                 <option
                                   className="cursor-pointer"
-                                  value="makehome"
+                                  value="apartamento"
                                 >
-                                  Make Home
+                                  Apartamento
                                 </option>
-                                <option className="cursor-pointer" value="mdk">
-                                  MDK Construtora
+                                <option
+                                  className="cursor-pointer"
+                                  value="residencial"
+                                >
+                                  Residencial
                                 </option>
                               </select>
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="type">Tipo do empreendimento</Label>
-                      <FormField
-                        control={form.control}
-                        name="type"
-                        render={({ field }) => (
-                          <FormItem>
-                            <select
-                              {...register("type")}
-                              className="bg-gray-50 border border-gray-300 text-stone-700 text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block w-full p-2  dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            >
-                              <option className="cursor-pointer" value="">
-                                Tipo do empreendimento
-                              </option>
-                              <option className="cursor-pointer" value="casa">
-                                Casa
-                              </option>
-                              <option
-                                className="cursor-pointer"
-                                value="apartamento"
-                              >
-                                Apartamento
-                              </option>
-                              <option
-                                className="cursor-pointer"
-                                value="residencial"
-                              >
-                                Residencial
-                              </option>
-                            </select>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="step-2">
-                <ScrollArea className="h-[300px] w-full">
-                  <Card className="py-4">
-                    <CardContent className="space-y-2">
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
                       <div className="space-y-1">
                         <Label htmlFor="cep">CEP</Label>
                         <div className="flex gap-2">
@@ -484,7 +562,6 @@ function NewNegotiationDialog() {
                       </div>
                       <div className="space-y-1">
                         <Label htmlFor="rua">Rua</Label>
-
                         <FormField
                           control={form.control}
                           name="cep"
@@ -560,7 +637,6 @@ function NewNegotiationDialog() {
                           )}
                         />
                       </div>
-
                       <div className="space-y-1">
                         <Label htmlFor="cidade">Cidade</Label>
 
@@ -581,13 +657,13 @@ function NewNegotiationDialog() {
                         />
                       </div>
                     </CardContent>
-                  </Card>
-                </ScrollArea>
+                  </ScrollArea>
+                </Card>
               </TabsContent>
-              <TabsContent value="step-3">
-                <ScrollArea className="h-[300px] w-full">
-                  <Card className="py-4">
-                    {!viewMode && (
+              <TabsContent value="step-2">
+                <Card className="py-4">
+                  {!viewMode && (
+                    <ScrollArea className="h-[500px] w-full">
                       <CardContent className="space-y-4">
                         <div className="w-full flex gap-2 items-center justify-between mb-3">
                           <span className="text-sm">
@@ -627,20 +703,20 @@ function NewNegotiationDialog() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-1">
-                          <Label htmlFor="quartos_simples">
-                            Quantidade de quartos simples
-                          </Label>
-                          <Input
-                            id="quartos_simples"
-                            type="number"
-                            name="quartos_simples"
-                            value={model.quartos_simples}
-                            onChange={changeModelInputs}
-                          />
-                        </div>
 
                         <div className="w-full flex gap-2">
+                          <div className="space-y-1">
+                            <Label htmlFor="quartos_simples">
+                              Quantidade de quartos simples
+                            </Label>
+                            <Input
+                              id="quartos_simples"
+                              type="number"
+                              name="quartos_simples"
+                              value={model.quartos_simples}
+                              onChange={changeModelInputs}
+                            />
+                          </div>
                           <div className="space-y-1">
                             <Label htmlFor="suites">Suites</Label>
                             <Input
@@ -661,18 +737,6 @@ function NewNegotiationDialog() {
                               onChange={changeModelInputs}
                             />
                           </div>
-                        </div>
-                        <div className="w-full flex items-center gap-4 ">
-                          <Label htmlFor="suites">Lavabos</Label>
-                          <Input
-                            id="lavabos"
-                            type="number"
-                            name="lavabos"
-                            value={model.lavabos}
-                            onChange={changeModelInputs}
-                          />
-                        </div>
-                        <div className="w-full flex gap-2">
                           <div className="space-y-1">
                             <Label htmlFor="vagas">Vagas</Label>
                             <Input
@@ -683,6 +747,8 @@ function NewNegotiationDialog() {
                               onChange={changeModelInputs}
                             />
                           </div>
+                        </div>
+                        <div className="w-full flex gap-2">
                           <div className="space-y-1">
                             <Label htmlFor="price">Preço</Label>
                             {/* <Input
@@ -705,8 +771,16 @@ function NewNegotiationDialog() {
                               }
                             />
                           </div>
-                        </div>
-                        <div className="w-full flex gap-2">
+                          <div className="space-y-1">
+                            <Label htmlFor="suites">Lavabos</Label>
+                            <Input
+                              id="lavabos"
+                              type="number"
+                              name="lavabos"
+                              value={model.lavabos}
+                              onChange={changeModelInputs}
+                            />
+                          </div>
                           <div className="space-y-1">
                             <Label htmlFor="area_total">Área Total</Label>
                             <Input
@@ -729,21 +803,21 @@ function NewNegotiationDialog() {
                               onChange={changeModelInputs}
                             />
                           </div>
+                          {model.type === "apartamento" && (
+                            <div className="space-y-1">
+                              <Label htmlFor="numeroApto">
+                                Número do apartamento
+                              </Label>
+                              <Input
+                                name="numeroApto"
+                                id="numeroApto"
+                                value={model.numeroApto}
+                                type="number"
+                                onChange={changeModelInputs}
+                              />
+                            </div>
+                          )}
                         </div>
-                        {model.type === "apartamento" && (
-                          <div className="space-y-1">
-                            <Label htmlFor="numeroApto">
-                              Número do apartamento
-                            </Label>
-                            <Input
-                              name="numeroApto"
-                              id="numeroApto"
-                              value={model.numeroApto}
-                              type="number"
-                              onChange={changeModelInputs}
-                            />
-                          </div>
-                        )}
 
                         <div className="space-y-1">
                           <Label htmlFor="documentos">
@@ -821,9 +895,11 @@ function NewNegotiationDialog() {
                           </Button>
                         </div>
                       </CardContent>
-                    )}
+                    </ScrollArea>
+                  )}
 
-                    {viewMode && (
+                  {viewMode && (
+                    <ScrollArea className="h-[500px] w-full">
                       <CardContent className="space-y-2">
                         <div className="w-full flex justify-between items-center mb-6">
                           <span>Modelos criados</span>{" "}
@@ -864,47 +940,105 @@ function NewNegotiationDialog() {
                           );
                         })}
                       </CardContent>
-                    )}
-                  </Card>
-                </ScrollArea>
+                    </ScrollArea>
+                  )}
+                </Card>
+              </TabsContent>
+              <TabsContent value="step-3">
+                <Card className="py-4">
+                  <ScrollArea className="h-[550px]">
+                    <CardContent className="space-y-3">
+                      <div className="space-y-1 w-full flex flex-col gap-2">
+                        <Label htmlFor="docsPre">Documentos predefenidos</Label>
+
+                        <Select onValueChange={(e) => setTipoDocumento(e)}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecione um item" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {listaDeDocumentos.map((item) => (
+                              <SelectItem key={item.value} value={item.value}>
+                                {item.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Label htmlFor="typeDocument">Tipo de documento</Label>
+                        <Input
+                          type="text"
+                          id="typeDocument"
+                          value={tipoDocumento}
+                          onChange={handleTiposDocumentos}
+                          placeholder="Digite o tipo de documento"
+                        />
+                        <Button
+                          size="sm"
+                          type="button"
+                          onClick={handleSaveTipoDocumento}
+                        >
+                          Cadastrar tipo
+                        </Button>
+
+                        <ul className="space-y-2">
+                          {tiposDocumentos.length > 0 &&
+                            tiposDocumentos.map((type, index) => (
+                              <li
+                                key={index}
+                                className="w-full flex justify-between text-sm"
+                              >
+                                <span>{type}</span>
+                                <Button
+                                  variant="destructive"
+                                  size="xs"
+                                  type="button"
+                                  onClick={() => handleDelete(index)}
+                                >
+                                  Apagar
+                                </Button>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </ScrollArea>
+                </Card>
               </TabsContent>
               <TabsContent value="step-4">
-                <Card className="py-4">
-                  <CardContent className="space-y-2">
-                    <Label htmlFor="chaves">
-                      Quantidade de chaves do empreendimento
-                    </Label>
-                    <FormField
-                      control={form.control}
-                      name="chaves"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
+                <Card>
+                  <ScrollArea className="h-[550px] ">
+                    <CardContent className="space-y-4 py-4">
+                      {tiposDocumentos.length > 0 ? (
+                        tiposDocumentos.map((tipo, index) => (
+                          <div key={index} className="mb-3">
+                            <Label htmlFor={tipo.trim()}>{tipo.trim()}</Label>
                             <Input
-                              id="chaves"
-                              type="number"
-                              min="0"
-                              max="100"
-                              name="chaves"
-                              {...register("chaves")}
+                              id={tipo.trim()}
+                              type="file"
+                              multiple
+                              onChange={(e) => handleFileChange(e, tipo)}
+                              accept=".pdf,.doc,.xlsx,.xls,.xlsm,.docx"
                             />
-                          </FormControl>
-                        </FormItem>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="w-full flex justify-center h-[80px] items-center font-bold text-blue-600 text-xl">
+                          <span>Nenhum tipo/pasta cadastrado</span>
+                        </div>
                       )}
-                    />
-                  </CardContent>
+                    </CardContent>
+                  </ScrollArea>
                 </Card>
               </TabsContent>
             </Tabs>
 
-            <DialogFooter className="flex justify-end w-full mt-3">
-              <DialogClose
+            <LargeDialogFooter className="flex justify-end w-full mt-3">
+              <LargeDialogClose
                 onClick={handleResetFields}
                 type="button"
                 className="flex items-center justify-center gap-1 bg-destructive px-3 rounded-md text-white"
               >
                 <X size={16} /> Cancelar
-              </DialogClose>
+              </LargeDialogClose>
               {modelos.length > 0 && (
                 <Button
                   type="submit"
@@ -916,11 +1050,11 @@ function NewNegotiationDialog() {
                   {loading && "Cadastrando..."}
                 </Button>
               )}
-            </DialogFooter>
+            </LargeDialogFooter>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </LargeDialogContent>
+    </LargeDialog>
   );
 }
 

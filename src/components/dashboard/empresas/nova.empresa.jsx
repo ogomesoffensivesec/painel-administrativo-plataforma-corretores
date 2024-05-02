@@ -30,46 +30,57 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQueryClient } from "react-query";
-import { formatarParaURL } from "./imovel.documentos";
 
 export const listaDeDocumentos = [
-  { label: "Alteração cadastral", value: "Alteração cadastral" },
-  { label: "Alvará de construção", value: "Alvará de construção" },
   {
-    label: "Alvará do corpo de bombeiro",
-    value: "Alvará do corpo de bombeiro",
+    nome: "Contrato Social ou Estatuto",
+    descricao:
+      "Documento que estabelece as regras e responsabilidades dos sócios e a estrutura da empresa.",
   },
-  { label: "ART - RTT", value: "ART - RTT" },
   {
-    label: "Atest. de conform. da inst. técnica",
-    value: "Atest. de conform. da inst. técnica",
+    nome: "Alvará de Funcionamento",
+    descricao: "Autorização para operar em determinado local.",
   },
-  { label: "Certidão de valor venal", value: "Certidão de valor venal" },
-  { label: "Certidão negativa", value: "Certidão negativa" },
-  { label: "Condomínio", value: "Condomínio" },
-  { label: "Conta de água - SAAE", value: "Conta de água - SAAE" },
-  { label: "Conta de luz - Elektro", value: "Conta de luz - Elektro" },
-  { label: "Contrato de compra e venda", value: "Contrato de compra e venda" },
-  { label: "Contrato Social", value: "Contrato Social" },
-  { label: "Habite-se", value: "Habite-se" },
-  { label: "IPTU", value: "IPTU" },
-  { label: "Matrícula do imóvel", value: "Matrícula do imóvel" },
-  { label: "Plantas", value: "Plantas" },
-  { label: "Registro de imóvel", value: "Registro de imóvel" },
+  {
+    nome: "Inscrição Estadual e Municipal",
+    descricao:
+      "Registro fiscal para operações de venda de mercadorias (ICMS) e prestação de serviços (ISS).",
+  },
+  {
+    nome: "Certificado Digital",
+    descricao:
+      "Utilizado para assinar documentos eletrônicos e realizar transações online com segurança.",
+  },
+  {
+    nome: "Livros Contábeis e Fiscais",
+    descricao:
+      "Registros contábeis e fiscais obrigatórios, como Livro Diário, Livro Razão e Livro de Entradas e Saídas.",
+  },
+  {
+    nome: "Documentos Trabalhistas",
+    descricao:
+      "Contratos de trabalho, folhas de pagamento, recibos de salários, entre outros.",
+  },
+  {
+    nome: "Notas Fiscais",
+    descricao:
+      "Emissão de notas fiscais para operações de venda de produtos ou prestação de serviços.",
+  },
 ];
 
-function NovoImovelDialog() {
+function NovaEmpresa() {
   const { register, handleSubmit, reset, setValue, control } = useForm();
   const [cep, setCep] = useState("");
   const [address, setAddress] = useState({});
   const [loadingCep, setLoadingCep] = useState(false);
   const { toast } = useToast();
-  const { loading, createImovel, empresas } = useData();
+  const { loading, createEmpresa, empresas } = useData();
   const [arquivoZip, setArquivoZip] = useState();
-  const [proprietario, setProprietario] = useState({});
+  const [socio, setSocio] = useState({});
   const [documentosSelecionados, setDocumentosSelecionados] = useState({});
   const [tiposDocumentos, setTiposDocumentos] = useState([]);
   const [tipoDocumento, setTipoDocumento] = useState("");
+  const [socios, setSocios] = useState([]);
   const queryClient = useQueryClient();
   const handleTiposDocumentos = (e) => {
     setTipoDocumento(e.target.value);
@@ -112,30 +123,48 @@ function NovoImovelDialog() {
     setFormValues({ ...formValues, [name]: value });
   };
 
-  const cadastrarProprietario = () => {
+  const cadastrarSocio = () => {
     const { nome, cpf, email, telefone } = formValues;
-    const novoProprietario = {
+    const novoSocio = {
       nome,
       cpf,
       email,
       telefone,
       tipoPessoa,
+      id: v4(),
     };
-    return novoProprietario;
+    return novoSocio;
   };
 
-  const handleCadastroProprietario = () => {
-    if (tipoPessoa === "pessoa-fisica") {
-      const novoProprietario = cadastrarProprietario();
-      setProprietario(novoProprietario);
+  const handleCadastroSocio = () => {
+    if (!socio.cnpj) {
+      const novoSocio = cadastrarSocio();
+      console.log("Sócio CPF");
+      console.log(novoSocio);
+      setSocios([...socios, novoSocio]);
+      console.log(socios);
+    } else {
+      const novoSocio = {
+        socio,
+        id: v4(),
+      };
+      setSocios([...socios, novoSocio]);
     }
-
-    setFormValues({
-      nome: "",
-      cpf: "",
-      email: "",
-      telefone: "",
-    });
+    if (tipoPessoa === "pessoa-juridica") {
+      setFormValues({
+        razaoSocial: "",
+        cnpj: "",
+        email: "",
+        telefone: "",
+      });
+    } else {
+      setFormValues({
+        nome: "",
+        cpf: "",
+        email: "",
+        telefone: "",
+      });
+    }
   };
   const [tipoPessoa, setTipoPessoa] = useState("");
 
@@ -189,8 +218,8 @@ function NovoImovelDialog() {
               />
             </div>
             <div className="mt-5 w-full flex justify-end">
-              <Button type="button" onClick={handleCadastroProprietario}>
-                Cadastrar proprietário
+              <Button type="button" onClick={handleCadastroSocio}>
+                Cadastrar sócio
               </Button>
             </div>
           </CardContent>
@@ -200,21 +229,22 @@ function NovoImovelDialog() {
       return (
         <Card className="mt-2">
           <CardContent className="py-2">
-            <Select onValueChange={(e) => setProprietario(e)}>
+            <Select onValueChange={(e) => setSocio(e)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Selecione um item" />
               </SelectTrigger>
               <SelectContent>
-                {empresas.map((empresa) => (
-                  <SelectItem key={empresa.id} value={empresa}>
-                    {empresa.razaoSocial}
-                  </SelectItem>
-                ))}
+                {empresas &&
+                  empresas.map((empresa) => (
+                    <SelectItem key={empresa.razaoSocial} value={item}>
+                      {item.razaoSocial}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
             <div className="mt-5 w-full flex justify-end">
-              <Button type="button" onClick={handleCadastroProprietario}>
-                Cadastrar proprietário
+              <Button type="button" onClick={handleCadastroSocio}>
+                Cadastrar Sócio
               </Button>
             </div>
           </CardContent>
@@ -238,12 +268,12 @@ function NovoImovelDialog() {
   };
 
   const onSubmit = async (data) => {
-    const requiredFields = ["nome", "type"];
+    const requiredFields = ["razaoSocial", "cnpj", "email"];
     for (const field of requiredFields) {
       if (!data[field]) {
         toast({
           title: "Campo obrigatório",
-          description: `Por favor, preencha o ${field} do imóvel.`,
+          description: `Por favor, preencha o ${field} da empresa.`,
           variant: "destructive",
         });
         return;
@@ -265,17 +295,17 @@ function NovoImovelDialog() {
 
     data.documentos = documentosSelecionados;
     data.id = v4();
-    data.proprietario = proprietario;
+    data.socios = socios;
 
-    await createImovel(data);
+    await createEmpresa(data);
     setAddress({});
     setCep("");
-    setProprietario({});
+    setSocio();
+    setSocios([]);
     setTiposDocumentos([]);
     setDocumentosSelecionados({});
     reset();
-    console.log(Object.values(documentosSelecionados));
-    queryClient.invalidateQueries({ queryKey: ["imoveis"] });
+    queryClient.invalidateQueries({ queryKey: ["empresas"] });
   };
 
   const handleResetFields = () => {
@@ -304,11 +334,11 @@ function NovoImovelDialog() {
     <LargeDialog>
       <LargeDialogTrigger className="h-9 px-3  border-none outline-none w-[220px] bg-blue-600 text-white shadow hover:bg-blue-500/90 rounded-md flex gap-1 justify-center items-center text-sm">
         <PlusCircle size={14} className="mr-1" />
-        Novo imóvel
+        Nova empresa
       </LargeDialogTrigger>
       <LargeDialogContent>
         <LargeDialogHeader>
-          <LargeDialogTitle>Cadastrar imóvel</LargeDialogTitle>
+          <LargeDialogTitle>Cadastrar empresa</LargeDialogTitle>
         </LargeDialogHeader>
         <Form control={control}>
           <form
@@ -318,48 +348,27 @@ function NovoImovelDialog() {
             <Tabs defaultValue="step-1" className="w-full">
               <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="step-1">Dados iniciais</TabsTrigger>
+
                 <TabsTrigger value="step-3">Tipo de documentos</TabsTrigger>
                 <TabsTrigger value="step-4">Documentos</TabsTrigger>
 
-                <TabsTrigger value="step-5">Proprietário (a)</TabsTrigger>
+                <TabsTrigger value="step-5">Sócio (a)</TabsTrigger>
               </TabsList>
               <TabsContent value="step-1">
                 <Card className="py-4">
-                  <ScrollArea className="h-[550px]">
-                    <CardContent className="space-y-3">
+                  <ScrollArea className="h-[550px] ">
+                    <CardContent className="space-y-4 py-4">
                       <div className="space-y-1">
-                        <Label htmlFor="nome">Nome do imóvel</Label>
-                        <Input {...register("nome")} id="nome" />
+                        <Label htmlFor="nome">Razão Social</Label>
+                        <Input {...register("razaoSocial")} id="razaoSocial" />
                       </div>
-
                       <div className="space-y-1">
-                        <Label htmlFor="type">Tipo do imóvel</Label>
-                        <select
-                          {...register("type")}
-                          className="bg-gray-50 border border-gray-300 text-stone-700 text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block w-full p-2  dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        >
-                          <option className="cursor-pointer" value="">
-                            Tipo do imóvel
-                          </option>
-                          <option className="cursor-pointer" value="casa">
-                            Casa
-                          </option>
-                          <option
-                            className="cursor-pointer"
-                            value="apartamento"
-                          >
-                            Apartamento
-                          </option>
-                          <option
-                            className="cursor-pointer"
-                            value="residencial"
-                          >
-                            Residencial
-                          </option>
-                          <option className="cursor-pointer" value="terreno">
-                            Terreno
-                          </option>
-                        </select>
+                        <Label htmlFor="cnpj">CNPJ</Label>
+                        <Input {...register("cnpj")} id="razaoSocial" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="email">E-mail</Label>
+                        <Input {...register("email")} id="email" />
                       </div>
                       <div className="space-y-1">
                         <Label htmlFor="cep">CEP</Label>
@@ -439,8 +448,8 @@ function NovoImovelDialog() {
 
               <TabsContent value="step-3">
                 <Card className="py-4">
-                  <ScrollArea className="h-[550px]">
-                    <CardContent className="space-y-3">
+                  <ScrollArea className="h-[550px] ">
+                    <CardContent className="space-y-4 py-4">
                       <div className="space-y-1 w-full flex flex-col gap-2">
                         <Select onValueChange={(e) => setTipoDocumento(e)}>
                           <SelectTrigger className="w-full">
@@ -448,8 +457,8 @@ function NovoImovelDialog() {
                           </SelectTrigger>
                           <SelectContent>
                             {listaDeDocumentos.map((item) => (
-                              <SelectItem key={item.value} value={item.value}>
-                                {item.label}
+                              <SelectItem key={item.nome} value={item.nome}>
+                                {item.nome}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -494,10 +503,9 @@ function NovoImovelDialog() {
                   </ScrollArea>
                 </Card>
               </TabsContent>
-
               <TabsContent value="step-4">
-                <Card>
-                  <ScrollArea className="h-[550px] ">
+                <Card className="py-4">
+                  <ScrollArea className="h-[550px]">
                     <CardContent className="space-y-4 py-4">
                       {tiposDocumentos.length > 0 ? (
                         tiposDocumentos.map((tipo, index) => (
@@ -508,7 +516,7 @@ function NovoImovelDialog() {
                               type="file"
                               multiple
                               onChange={(e) => handleFileChange(e, tipo)}
-                              accept=".pdf,.doc,.xlsx,.xls,.xlsm,.docx"
+                              accept=".pdf,.doc,.xlsx,.xls,.xlsm,.docx, .zip, .rar, .pfx"
                             />
                           </div>
                         ))
@@ -522,43 +530,24 @@ function NovoImovelDialog() {
                 </Card>
               </TabsContent>
               <TabsContent value="step-5">
-                <Card>
-                  <ScrollArea className="h-[550px] ">
+                <Card className="py-4">
+                  <ScrollArea className="h-[550px]">
                     <CardContent className="space-y-4 py-4">
-                      {Object.values(proprietario).length === 0 ? (
-                        <>
-                          <div className="space-y-1 mt-6">
-                            <label htmlFor="type">
-                              Pessoa física ou jurídica:
-                            </label>
-                            <select
-                              className="bg-gray-50 border border-gray-300 text-stone-700 text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block w-full p-2 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                              value={tipoPessoa}
-                              onChange={handleTipoPessoaChange}
-                            >
-                              <option value="">Física ou Jurídica</option>
-                              <option value="pessoa-fisica">
-                                Pessoa física
-                              </option>
-                              <option value="pessoa-juridica">
-                                Pessoa jurídica
-                              </option>
-                            </select>
-                          </div>
-                          {renderizarFormulario()}
-                        </>
-                      ) : (
-                        <div className="w-full flex gap-1 mt-6 mb-3">
-                          <span className="font-semibold">
-                            Proprietário deste imóvel:{" "}
-                          </span>
-                          <span>
-                            {tipoPessoa === "pessoa-fisica"
-                              ? proprietario.nome
-                              : proprietario.razaoSocial}
-                          </span>
-                        </div>
-                      )}
+                      <div className="space-y-1 mt-6">
+                        <label htmlFor="type">Pessoa física ou jurídica:</label>
+                        <select
+                          className="bg-gray-50 border border-gray-300 text-stone-700 text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block w-full p-2 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                          value={tipoPessoa}
+                          onChange={handleTipoPessoaChange}
+                        >
+                          <option value="">Física ou Jurídica</option>
+                          <option value="pessoa-fisica">Pessoa física</option>
+                          <option value="pessoa-juridica">
+                            Pessoa jurídica
+                          </option>
+                        </select>
+                      </div>
+                      {renderizarFormulario()}
                     </CardContent>
                   </ScrollArea>
                 </Card>
@@ -578,7 +567,7 @@ function NovoImovelDialog() {
                 disabled={loading}
                 className="button-primary"
               >
-                {loading ? "Cadastrando..." : "Novo imóvel"}
+                {loading ? "Cadastrando..." : "Nova empresa"}
               </Button>
             </LargeDialogFooter>
           </form>
@@ -588,4 +577,4 @@ function NovoImovelDialog() {
   );
 }
 
-export default NovoImovelDialog;
+export default NovaEmpresa;

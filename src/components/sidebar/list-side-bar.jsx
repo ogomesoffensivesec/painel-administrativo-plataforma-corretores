@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import useAuth from "@/hooks/useAuth";
 import {
   ArrowLeftRight,
+  BetweenHorizonalEnd,
   Building2,
   CalendarCheck,
   HomeIcon,
@@ -82,6 +83,12 @@ function ListSideBar({ userFake }) {
       selected: segment === "empreendimentos" ? true : false,
 
       href: "/dashboard/empreendimentos",
+    },
+    {
+      text: "Empresas",
+      icon: <BetweenHorizonalEnd className="w-6 h-6" />,
+      selected: segment === "empresas" ? true : false,
+      href: "/dashboard/empresas",
     },
     {
       text: "Corretores",

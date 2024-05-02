@@ -28,13 +28,13 @@ import {
 } from "@/components/ui/tooltip";
 
 import { useEffect, useState } from "react";
-import { listaDeDocumentos } from "./novo.imovel.dialog";
 import useData from "@/hooks/useData";
 import { useQueryClient } from "react-query";
 import { toast } from "@/components/ui/use-toast";
 import { File, Folder, Info, Pencil, Trash, X } from "lucide-react";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { listaDeDocumentos } from "../imoveis/novo.imovel.dialog";
 
 export function formatarParaURL(texto) {
   let urlFormatada = texto
@@ -46,7 +46,7 @@ export function formatarParaURL(texto) {
   return urlFormatada;
 }
 
-function DocumentosImovel({ imovel, documentos }) {
+function DocumentosEmpreendimento({ empreendimento, documentos }) {
   const queryClient = useQueryClient();
   const {
     cadastrarNovosDocumentos,
@@ -114,9 +114,9 @@ function DocumentosImovel({ imovel, documentos }) {
       });
       return;
     }
-    const type = "imoveis";
+    const type = "empreendimentos";
 
-    await cadastrarNovosDocumentos(type, imovel, novoDocumento);
+    await cadastrarNovosDocumentos(type, empreendimento, novoDocumento);
 
     await queryClient.invalidateQueries({ queryKey: ["imoveis"] });
     console.log("Query realizada");
@@ -131,8 +131,8 @@ function DocumentosImovel({ imovel, documentos }) {
   };
 
   const handleRemoverDocumento = async (docId) => {
-    const type = "imoveis";
-    await deletarDocumento(type, imovel.id, docId, documentos);
+    const type = "empreendimentos";
+    await deletarDocumento(type, empreendimento.id, docId, documentos);
     const atualizarDocumentos = documentosFiltrados.filter(
       (docs) => docs.id !== docId
     );
@@ -156,7 +156,7 @@ function DocumentosImovel({ imovel, documentos }) {
     }
 
     const nomeFormatado = formatarParaURL(novoNomeDocumento);
-    const type = "imoveis";
+    const type = "empreendimentos";
     const extensaoDocumento = await renomearDocumento(
       type,
       imovelId,
@@ -180,12 +180,14 @@ function DocumentosImovel({ imovel, documentos }) {
   };
   return (
     <Dialog>
-      <DialogTrigger className="h-9  px-3 border-none outline-none  bg-blue-600 text-white shadow hover:bg-blue-500/90 rounded-md flex gap-1 justify-center items-center text-sm">
+      <DialogTrigger className="h-8 w-[150px] px-3 border-none outline-none  bg-blue-600 text-white shadow hover:bg-blue-500/90 rounded-md flex gap-1 justify-center items-center text-sm">
         Documentação
       </DialogTrigger>
       <DialogContent className="w-7/12">
         <DialogHeader>
-          <DialogTitle>Documentos do imóvel {imovel.nome}</DialogTitle>
+          <DialogTitle>
+            Documentos do empreendimento {empreendimento.nome}
+          </DialogTitle>
         </DialogHeader>
         <div className="w-full space-y-6">
           <div>
@@ -368,7 +370,10 @@ function DocumentosImovel({ imovel, documentos }) {
                                 <Button
                                   type="button"
                                   onClick={() =>
-                                    handleRenomearDocumento(imovel.id, doc.id)
+                                    handleRenomearDocumento(
+                                      empreendimento.id,
+                                      doc.id
+                                    )
                                   }
                                 >
                                   Renomear
@@ -414,4 +419,4 @@ function DocumentosImovel({ imovel, documentos }) {
   );
 }
 
-export default DocumentosImovel;
+export default DocumentosEmpreendimento;

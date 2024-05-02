@@ -11,7 +11,7 @@ function TabsOptions({ empreendimento }) {
     <Tabs defaultValue="models" className="w-full">
       <TabsList>
         <TabsTrigger value="models">Modelos do imóvel</TabsTrigger>
-        <TabsTrigger value="documents">Documentos</TabsTrigger>
+        <TabsTrigger value="documents">Documentos do modelo</TabsTrigger>
         {/* <TabsTrigger value="negotiations">Negociações</TabsTrigger> */}
       </TabsList>
       <TabsContent value="models">

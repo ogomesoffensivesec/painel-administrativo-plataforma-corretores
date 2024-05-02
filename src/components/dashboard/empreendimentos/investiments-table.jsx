@@ -14,6 +14,7 @@ import { useQuery } from "react-query";
 
 import PaginationComponent from "./pagination";
 import useData from "@/hooks/useData";
+import DocumentosEmpreendimento from "./empreendimento.documentos";
 
 function TabelaInvestimentos() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -63,6 +64,7 @@ function TabelaInvestimentos() {
                 <TableHead>Preço</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Ações</TableHead>
+                <TableHead>Documentação</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -93,7 +95,7 @@ function TabelaInvestimentos() {
                   <TableCell>
                     <Button
                       disabled={loading && selectedId === investiment.id}
-                      className="h-8  px-4 w-[150px]"
+                      className="h-8  px-3 w-[150px]"
                       onClick={async () => {
                         try {
                           setLoading(true);
@@ -114,6 +116,12 @@ function TabelaInvestimentos() {
                         ? "Carregando..."
                         : "Detalhes"}
                     </Button>
+                  </TableCell>
+                  <TableCell>
+                    <DocumentosEmpreendimento
+                      empreendimento={investiment}
+                      documentos={investiment.documentos}
+                    />
                   </TableCell>
                 </TableRow>
               ))}

@@ -28,13 +28,13 @@ import {
 } from "@/components/ui/tooltip";
 
 import { useEffect, useState } from "react";
-import { listaDeDocumentos } from "./novo.imovel.dialog";
 import useData from "@/hooks/useData";
 import { useQueryClient } from "react-query";
 import { toast } from "@/components/ui/use-toast";
 import { File, Folder, Info, Pencil, Trash, X } from "lucide-react";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { listaDeDocumentos } from "./nova.empresa";
 
 export function formatarParaURL(texto) {
   let urlFormatada = texto
@@ -46,7 +46,7 @@ export function formatarParaURL(texto) {
   return urlFormatada;
 }
 
-function DocumentosImovel({ imovel, documentos }) {
+function DocumentosEmpresa({ empresa, documentos }) {
   const queryClient = useQueryClient();
   const {
     cadastrarNovosDocumentos,
@@ -114,11 +114,10 @@ function DocumentosImovel({ imovel, documentos }) {
       });
       return;
     }
-    const type = "imoveis";
+    const type = "empresas";
+    await cadastrarNovosDocumentos(type, empresa, novoDocumento);
 
-    await cadastrarNovosDocumentos(type, imovel, novoDocumento);
-
-    await queryClient.invalidateQueries({ queryKey: ["imoveis"] });
+    await queryClient.invalidateQueries({ queryKey: ["empresas"] });
     console.log("Query realizada");
     setAdicionarNovoDocumento(false);
     setNovoDocumento({});
@@ -131,8 +130,8 @@ function DocumentosImovel({ imovel, documentos }) {
   };
 
   const handleRemoverDocumento = async (docId) => {
-    const type = "imoveis";
-    await deletarDocumento(type, imovel.id, docId, documentos);
+    const type = "empresas";
+    await deletarDocumento(type, empresa.id, docId);
     const atualizarDocumentos = documentosFiltrados.filter(
       (docs) => docs.id !== docId
     );
@@ -156,7 +155,7 @@ function DocumentosImovel({ imovel, documentos }) {
     }
 
     const nomeFormatado = formatarParaURL(novoNomeDocumento);
-    const type = "imoveis";
+    const type = "empresas";
     const extensaoDocumento = await renomearDocumento(
       type,
       imovelId,
@@ -185,7 +184,7 @@ function DocumentosImovel({ imovel, documentos }) {
       </DialogTrigger>
       <DialogContent className="w-7/12">
         <DialogHeader>
-          <DialogTitle>Documentos do imóvel {imovel.nome}</DialogTitle>
+          <DialogTitle>Documentos da empresa {empresa.razaoSocial}</DialogTitle>
         </DialogHeader>
         <div className="w-full space-y-6">
           <div>
@@ -200,8 +199,8 @@ function DocumentosImovel({ imovel, documentos }) {
                         </SelectTrigger>
                         <SelectContent className="h-[400px]">
                           {listaDeDocumentos.map((item) => (
-                            <SelectItem key={item.value} value={item.value}>
-                              {item.label}
+                            <SelectItem key={item.nome} value={item.nome}>
+                              {item.nome}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -368,7 +367,7 @@ function DocumentosImovel({ imovel, documentos }) {
                                 <Button
                                   type="button"
                                   onClick={() =>
-                                    handleRenomearDocumento(imovel.id, doc.id)
+                                    handleRenomearDocumento(empresa.id, doc.id)
                                   }
                                 >
                                   Renomear
@@ -414,4 +413,4 @@ function DocumentosImovel({ imovel, documentos }) {
   );
 }
 
-export default DocumentosImovel;
+export default DocumentosEmpresa;

@@ -14,6 +14,8 @@ const DataContext = createContext();
 export function DataProvider({ children }) {
   const [empreendimentos, setEmpreendimentos] = useState([]);
   const [empreendimento, setEmpreendimento] = useState({});
+  const [imoveis, setImoveis] = useState([])
+  const [empresas, setEmpresas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [counter, setCounter] = useState(0);
   const [visitasPendentes, setVisitasPendentes] = useState([]);
@@ -50,9 +52,9 @@ export function DataProvider({ children }) {
     };
   }
 
-  const deletarDocumento = async (imovelId, docId,) => {
-    const referenciaDatabase = ref(database, `/imoveis/${imovelId}/documentos/`)
-    const referenciaDocumento = storageRef(storage, `/imoveis/${imovelId}/documentos/${docId}`);
+  const deletarDocumento = async (type, id, docId,) => {
+    const referenciaDatabase = ref(database, `/${type}/${id}/documentos/`)
+    const referenciaDocumento = storageRef(storage, `/${type}/${id}/documentos/${docId}`);
     const snapshot = await get(referenciaDatabase)
     if (snapshot.exists()) {
       const documentos = snapshot.val()
@@ -101,7 +103,7 @@ export function DataProvider({ children }) {
   }
 
 
-  async function enviarNovosDocumentos(documents, imovelID) {
+  async function enviarNovosDocumentos(type, documents, id) {
     const uploadTasks = [];
 
     for (const documentKey in documents) {
@@ -109,7 +111,7 @@ export function DataProvider({ children }) {
 
       for (const document of documentList) {
         const documentId = v4();
-        const referenciaDocumento = storageRef(storage, `/imoveis/${imovelID}/documentos/${documentId}`);
+        const referenciaDocumento = storageRef(storage, `/${type}/${id}/documentos/${documentId}`);
         const data = new Date();
         const dia = String(data.getDate()).padStart(2, '0');
         const mes = String(data.getMonth() + 1).padStart(2, '0');
@@ -133,18 +135,18 @@ export function DataProvider({ children }) {
   }
 
 
-  async function cadastrarNovosDocumentos(imovel, newDocs) {
-    const imovelID = imovel.id
+  async function cadastrarNovosDocumentos(type, object, newDocs) {
+    const id = object.id
     try {
       setLoading(true)
-      const documentosEnviados = await enviarNovosDocumentos(newDocs, imovelID);
+      const documentosEnviados = await enviarNovosDocumentos(type, newDocs, id);
 
-      let novosDocumentos = imovel.documentos || []
+      let novosDocumentos = object.documentos || []
       const arrayDocumentos = novosDocumentos.concat(documentosEnviados)
 
 
-      const referenciaImovel = ref(database, `/imoveis/${imovelID}/documentos`);
-      await set(referenciaImovel, arrayDocumentos);
+      const referenciaObjeto = ref(database, `/${type}/${id}/documentos`);
+      await set(referenciaObjeto, arrayDocumentos);
 
       toast({
         title: 'Novos documentos inseridos com sucesso',
@@ -164,9 +166,9 @@ export function DataProvider({ children }) {
     }
   }
 
-  const renomearDocumento = async (imovelId, documentoId, newName) => {
+  const renomearDocumento = async (type, id, documentoId, newName) => {
     try {
-      const referenciaDocumento = ref(database, `/imoveis/${imovelId}/documentos/`);
+      const referenciaDocumento = ref(database, `/${type}/${id}/documentos/`);
       const snapshot = await get(referenciaDocumento);
 
       if (snapshot.exists()) {
@@ -233,6 +235,62 @@ export function DataProvider({ children }) {
     }
   }
 
+  const uploadDocumentosEmpresa = async (documents, empresaID) => {
+    const uploadTasks = [];
+    for (const documentKey in documents) {
+      const documentList = documents[documentKey];
+      for (const document of documentList) {
+        const documentId = v4();
+        const referenciaDocumento = storageRef(storage, `/empresas/${empresaID}/documentos/${documentId}`);
+        var data = new Date();
+        var dia = String(data.getDate()).padStart(2, '0');
+        var mes = String(data.getMonth() + 1).padStart(2, '0');
+        var ano = data.getFullYear();
+        const usuarioAtual = auth.currentUser.displayName
+
+
+        var dataAtual = dia + '/' + mes + '/' + ano;
+
+        const uploadTask = uploadBytes(referenciaDocumento, document, { contentType: document.type })
+          .then(async () => {
+            const url = await getDownloadURL(referenciaDocumento);
+
+            return { url, id: documentId, name: document.name, tipo: documentKey, createdAt: dataAtual, createdBy: usuarioAtual };
+          });
+        uploadTasks.push(uploadTask);
+      }
+    }
+
+    // Aguardar todas as tarefas de upload concluírem antes de retornar
+    return await Promise.all(uploadTasks);
+  }
+  async function createEmpresa(empresa) {
+    try {
+      setLoading(true)
+      const empresaID = empresa.id
+      const documentosEnviados = await uploadDocumentosEmpresa(empresa.documentos, empresaID);
+      empresa.documentos = documentosEnviados;
+
+      const referenciaEmpresas = ref(database, `/empresas/${empresaID}`);
+      await set(referenciaEmpresas, empresa);
+
+      toast({
+        title: 'Empresa cadastrado com sucesso',
+        description: 'Parabéns! Você acaba de cadastrar uma nova empresa!',
+        variant: 'success'
+      });
+
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: 'Erro ao cadastrar a empresa!',
+        variant: 'destructive'
+      });
+    }
+    finally {
+      setLoading(false)
+    }
+  }
 
   async function create(empreendimento, modelos) {
 
@@ -240,6 +298,9 @@ export function DataProvider({ children }) {
     const uid = v4();
     const referenciaDatabase = ref(database, `/empreendimentos/${uid}`);
     const modelosEnviados = await uploadFiles(modelos, uid)
+    const type = 'empreendimentos'
+    const documentosEnviados = await enviarNovosDocumentos(type, empreendimento.documentos, uid)
+    empreendimento.documentos = documentosEnviados
     empreendimento.modelos = modelosEnviados;
     empreendimento.id = uid;
     try {
@@ -404,6 +465,8 @@ export function DataProvider({ children }) {
   useEffect(() => {
     const referenciaEmpreendimentos = ref(database, '/empreendimentos');
     const referenciaVisitasPendentes = ref(database, `/visitas-em-andamento`)
+    const referenciaImoveis = ref(database, `/imoveis`)
+    const referenciaEmpresas = ref(database, '/empresas')
     const buscarDados = async () => {
       try {
         await onValue(referenciaVisitasPendentes, snapshot => {
@@ -426,6 +489,18 @@ export function DataProvider({ children }) {
             setEmpreendimentos([]);
           }
         });
+        await onValue(referenciaEmpresas, (snapshot) => {
+          if (snapshot.exists) {
+            const data = Object.values(snapshot.val())
+            setEmpresas(data)
+          }
+        })
+        await onValue(referenciaImoveis, (snapshot) => {
+          if (snapshot.exists) {
+            const data = Object.values(snapshot.val())
+            setImoveis(data)
+          }
+        })
       } catch (error) {
         console.error(error);
       }
@@ -435,6 +510,8 @@ export function DataProvider({ children }) {
     return () => {
       off(referenciaEmpreendimentos);
       off(referenciaVisitasPendentes)
+      off(referenciaEmpresas)
+      off(referenciaImoveis)
     };
   }, []);
 
@@ -598,7 +675,9 @@ export function DataProvider({ children }) {
       createImovel,
       cadastrarNovosDocumentos,
       deletarDocumento,
-      renomearDocumento
+      renomearDocumento, empresas,
+      createEmpresa,
+      imoveis
     }}>
       {children}
     </DataContext.Provider>

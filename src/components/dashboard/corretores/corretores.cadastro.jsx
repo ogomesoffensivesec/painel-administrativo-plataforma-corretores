@@ -85,7 +85,7 @@ function CadastroCorretor() {
             <DialogTitle>Cadastro de corretor</DialogTitle>
           </DialogHeader>
 
-          <Tabs defaultValue="personal-data" className="w-[400px]">
+          <Tabs defaultValue="personal-data" className="w-full">
             <TabsList>
               <TabsTrigger value="personal-data">Dados pessoais</TabsTrigger>
               <TabsTrigger value="plataform-credentials">
