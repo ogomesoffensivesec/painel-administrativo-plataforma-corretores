@@ -290,10 +290,10 @@ function DocumentosEmpreendimento({ empreendimento, documentos }) {
                               >
                                 <TooltipProvider>
                                   <Tooltip>
-                                    <TooltipTrigger className=" flex text-left gap-2 items-center w-[350px] overflow-hidden overflow-ellipsis whitespace-nowrap">
+                                    <TooltipTrigger className=" flex text-left gap-2 items-center w-[150px] overflow-hidden overflow-ellipsis whitespace-nowrap">
                                       <File size={16} />
 
-                                      <span className=" w-[350px] overflow-hidden overflow-ellipsis whitespace-nowrap ">
+                                      <span className=" w-[250px] overflow-hidden overflow-ellipsis whitespace-nowrap ">
                                         {doc.name}
                                       </span>
                                     </TooltipTrigger>

@@ -448,6 +448,7 @@ function NewNegotiationDialog() {
                                       <option
                                         className="cursor-pointer"
                                         value={empresa}
+                                        key={empresa.id}
                                       >
                                         {empresa.razaoSocial}
                                       </option>
@@ -479,6 +480,7 @@ function NewNegotiationDialog() {
                                       <option
                                         className="cursor-pointer"
                                         value={imovel}
+                                        key={imovel.id}
                                       >
                                         {imovel.nome}
                                       </option>
