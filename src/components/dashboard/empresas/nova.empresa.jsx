@@ -20,7 +20,7 @@ import useData from "@/hooks/useData";
 import JSZip from "jszip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, XCircle } from "lucide-react";
+import { PlusCircle, Trash, XCircle } from "lucide-react";
 import { v4 } from "uuid";
 import {
   Select,
@@ -170,6 +170,11 @@ function NovaEmpresa() {
 
   const handleTipoPessoaChange = (e) => {
     setTipoPessoa(e.target.value);
+  };
+
+  const deletarSocio = (email) => {
+    const sociosFiltrados = socios.filter((sco) => sco.email !== email);
+    setSocios(sociosFiltrados);
   };
 
   const renderizarFormulario = () => {
@@ -338,7 +343,9 @@ function NovaEmpresa() {
       </LargeDialogTrigger>
       <LargeDialogContent>
         <LargeDialogHeader>
-          <LargeDialogTitle>Cadastrar empresa</LargeDialogTitle>
+          <LargeDialogTitle className="text-blue-600 font-bold text-xl">
+            Cadastrar nova empresa
+          </LargeDialogTitle>
         </LargeDialogHeader>
         <Form control={control}>
           <form
@@ -352,12 +359,12 @@ function NovaEmpresa() {
                 <TabsTrigger value="step-3">Tipo de documentos</TabsTrigger>
                 <TabsTrigger value="step-4">Documentos</TabsTrigger>
 
-                <TabsTrigger value="step-5">Sócio (a)</TabsTrigger>
+                <TabsTrigger value="step-5">Sócios (as)</TabsTrigger>
               </TabsList>
               <TabsContent value="step-1">
-                <Card className="py-4">
-                  <ScrollArea className="h-[550px] ">
-                    <CardContent className="space-y-4 py-4">
+                <Card className="py-2">
+                  <ScrollArea className="h-[450px] ">
+                    <CardContent className="space-y-4">
                       <div className="space-y-1">
                         <Label htmlFor="nome">Razão Social</Label>
                         <Input {...register("razaoSocial")} id="razaoSocial" />
@@ -447,9 +454,9 @@ function NovaEmpresa() {
               </TabsContent>
 
               <TabsContent value="step-3">
-                <Card className="py-4">
-                  <ScrollArea className="h-[550px] ">
-                    <CardContent className="space-y-4 py-4">
+                <Card className="py-2">
+                  <ScrollArea className="h-[450px] ">
+                    <CardContent className="space-y-4 ">
                       <div className="space-y-1 w-full flex flex-col gap-2">
                         <Select onValueChange={(e) => setTipoDocumento(e)}>
                           <SelectTrigger className="w-full">
@@ -504,9 +511,9 @@ function NovaEmpresa() {
                 </Card>
               </TabsContent>
               <TabsContent value="step-4">
-                <Card className="py-4">
-                  <ScrollArea className="h-[550px]">
-                    <CardContent className="space-y-4 py-4">
+                <Card className="py-2">
+                  <ScrollArea className="h-[450px]">
+                    <CardContent className="space-y-4 ">
                       {tiposDocumentos.length > 0 ? (
                         tiposDocumentos.map((tipo, index) => (
                           <div key={index} className="mb-3">
@@ -530,11 +537,36 @@ function NovaEmpresa() {
                 </Card>
               </TabsContent>
               <TabsContent value="step-5">
-                <Card className="py-4">
-                  <ScrollArea className="h-[550px]">
-                    <CardContent className="space-y-4 py-4">
+                <Card className="py-2">
+                  <ScrollArea className="h-[450px]">
+                    <CardContent className="space-y-4">
+                      {socios.length > 0 && (
+                        <div>
+                          <span className="font-bold text-md text-blue-600">
+                            Sócios cadastrados
+                          </span>
+                          <ul>
+                            {socios.map((sc) => (
+                              <li
+                                key={sc.email}
+                                className="w-full flex justify-between py-2 hover:bg-stone-200 px-2 items-center rounded-md duration-400 transition-all shadow-none cursor-pointer hover:shadow-md"
+                              >
+                                <span>{sc.nome || sc.razaoSocial}</span>{" "}
+                                <Trash
+                                  size={18}
+                                  onClick={() => deletarSocio(sc.email)}
+                                  className="text-red-600 cursor-pointer"
+                                />
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
                       <div className="space-y-1 mt-6">
-                        <label htmlFor="type">Pessoa física ou jurídica:</label>
+                        <label htmlFor="type" className="text-sm">
+                          Selecione o tipo de pessoa: física ou jurídica:
+                        </label>
                         <select
                           className="bg-gray-50 border border-gray-300 text-stone-700 text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block w-full p-2 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                           value={tipoPessoa}

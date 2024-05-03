@@ -74,33 +74,34 @@ export function DataProvider({ children }) {
   }
   const uploadDocumentosImovel = async (documents, imovelID) => {
     const uploadTasks = [];
+
+    // Iterar sobre todos os documentos
     for (const documentKey in documents) {
       const documentList = documents[documentKey];
       for (const document of documentList) {
+        // Gerar ID único para o documento
         const documentId = v4();
         const referenciaDocumento = storageRef(storage, `/imoveis/${imovelID}/documentos/${documentId}`);
-        var data = new Date();
-        var dia = String(data.getDate()).padStart(2, '0');
-        var mes = String(data.getMonth() + 1).padStart(2, '0');
-        var ano = data.getFullYear();
-        const usuarioAtual = auth.currentUser.displayName
+        const dataAtual = new Date().toLocaleDateString('pt-BR'); // Data atual em formato DD/MM/AAAA
+        const usuarioAtual = auth.currentUser.displayName;
 
+        // Adicionar tarefa de upload ao array de promessas
+        uploadTasks.push(
+          uploadBytes(referenciaDocumento, document, { contentType: document.type })
+            .then(async () => {
+              const url = await getDownloadURL(referenciaDocumento);
 
-        var dataAtual = dia + '/' + mes + '/' + ano;
-
-        const uploadTask = uploadBytes(referenciaDocumento, document, { contentType: document.type })
-          .then(async () => {
-            const url = await getDownloadURL(referenciaDocumento);
-
-            return { url, id: documentId, name: document.name, tipo: documentKey, createdAt: dataAtual, createdBy: usuarioAtual };
-          });
-        uploadTasks.push(uploadTask);
+              // Retornar os dados relevantes do documento
+              return { url, id: documentId, name: document.name, tipo: documentKey, createdAt: dataAtual, createdBy: usuarioAtual };
+            })
+        );
       }
     }
 
     // Aguardar todas as tarefas de upload concluírem antes de retornar
     return await Promise.all(uploadTasks);
   }
+
 
 
   async function enviarNovosDocumentos(type, documents, id) {
@@ -112,18 +113,14 @@ export function DataProvider({ children }) {
       for (const document of documentList) {
         const documentId = v4();
         const referenciaDocumento = storageRef(storage, `/${type}/${id}/documentos/${documentId}`);
-        const data = new Date();
-        const dia = String(data.getDate()).padStart(2, '0');
-        const mes = String(data.getMonth() + 1).padStart(2, '0');
-        const ano = data.getFullYear();
+        const dataAtual = new Date().toLocaleDateString('pt-BR'); // Data atual em formato DD/MM/AAAA
         const usuarioAtual = auth.currentUser.displayName;
-        const dataAtual = `${dia}/${mes}/${ano}`;
-
 
         const uploadTask = uploadBytes(referenciaDocumento, document, { contentType: document.type })
           .then(async () => {
             const url = await getDownloadURL(referenciaDocumento);
 
+            // Retornar os dados relevantes do documento
             return { url, id: documentId, name: document.name, tipo: documentKey, createdAt: dataAtual, createdBy: usuarioAtual };
           });
 
@@ -131,8 +128,10 @@ export function DataProvider({ children }) {
       }
     }
 
+    // Aguardar todas as tarefas de upload concluírem antes de retornar
     return await Promise.all(uploadTasks);
   }
+
 
 
   async function cadastrarNovosDocumentos(type, object, newDocs) {
@@ -155,7 +154,7 @@ export function DataProvider({ children }) {
       return documentosEnviados
 
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
       toast({
         title: 'Erro ao inserir novos documentos!',
         variant: 'destructive'
@@ -224,7 +223,7 @@ export function DataProvider({ children }) {
       });
 
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
       toast({
         title: 'Erro ao cadastrar o imóvel!',
         variant: 'destructive'
@@ -242,28 +241,22 @@ export function DataProvider({ children }) {
       for (const document of documentList) {
         const documentId = v4();
         const referenciaDocumento = storageRef(storage, `/empresas/${empresaID}/documentos/${documentId}`);
-        var data = new Date();
-        var dia = String(data.getDate()).padStart(2, '0');
-        var mes = String(data.getMonth() + 1).padStart(2, '0');
-        var ano = data.getFullYear();
-        const usuarioAtual = auth.currentUser.displayName
+        const dataAtual = new Date().toLocaleDateString('pt-BR'); // Data atual em formato DD/MM/AAAA
+        const usuarioAtual = auth.currentUser.displayName;
 
+        uploadTasks.push(
+          uploadBytes(referenciaDocumento, document, { contentType: document.type })
+            .then(async () => {
+              const url = await getDownloadURL(referenciaDocumento);
 
-        var dataAtual = dia + '/' + mes + '/' + ano;
-
-        const uploadTask = uploadBytes(referenciaDocumento, document, { contentType: document.type })
-          .then(async () => {
-            const url = await getDownloadURL(referenciaDocumento);
-
-            return { url, id: documentId, name: document.name, tipo: documentKey, createdAt: dataAtual, createdBy: usuarioAtual };
-          });
-        uploadTasks.push(uploadTask);
+              return { url, id: documentId, name: document.name, tipo: documentKey, createdAt: dataAtual, createdBy: usuarioAtual };
+            })
+        );
       }
     }
-
-    // Aguardar todas as tarefas de upload concluírem antes de retornar
     return await Promise.all(uploadTasks);
   }
+
   async function createEmpresa(empresa) {
     try {
       setLoading(true)
@@ -281,7 +274,7 @@ export function DataProvider({ children }) {
       });
 
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
       toast({
         title: 'Erro ao cadastrar a empresa!',
         variant: 'destructive'
@@ -490,13 +483,13 @@ export function DataProvider({ children }) {
           }
         });
         await onValue(referenciaEmpresas, (snapshot) => {
-          if (snapshot.exists) {
+          if (snapshot.exists()) {
             const data = Object.values(snapshot.val())
             setEmpresas(data)
           }
         })
         await onValue(referenciaImoveis, (snapshot) => {
-          if (snapshot.exists) {
+          if (snapshot.exists()) {
             const data = Object.values(snapshot.val())
             setImoveis(data)
           }

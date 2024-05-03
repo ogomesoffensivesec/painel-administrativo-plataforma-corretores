@@ -325,7 +325,7 @@ function NovoImovelDialog() {
               </TabsList>
               <TabsContent value="step-1">
                 <Card className="py-4">
-                  <ScrollArea className="h-[550px]">
+                  <ScrollArea className="h-[400px]">
                     <CardContent className="space-y-3">
                       <div className="space-y-1">
                         <Label htmlFor="nome">Nome do imóvel</Label>
@@ -439,7 +439,7 @@ function NovoImovelDialog() {
 
               <TabsContent value="step-3">
                 <Card className="py-4">
-                  <ScrollArea className="h-[550px]">
+                  <ScrollArea className="h-[400px]">
                     <CardContent className="space-y-3">
                       <div className="space-y-1 w-full flex flex-col gap-2">
                         <Select onValueChange={(e) => setTipoDocumento(e)}>
@@ -497,7 +497,7 @@ function NovoImovelDialog() {
 
               <TabsContent value="step-4">
                 <Card>
-                  <ScrollArea className="h-[550px] ">
+                  <ScrollArea className="h-[400px] ">
                     <CardContent className="space-y-4 py-4">
                       {tiposDocumentos.length > 0 ? (
                         tiposDocumentos.map((tipo, index) => (
@@ -523,31 +523,25 @@ function NovoImovelDialog() {
               </TabsContent>
               <TabsContent value="step-5">
                 <Card>
-                  <ScrollArea className="h-[550px] ">
+                  <ScrollArea className="h-[400px] ">
                     <CardContent className="space-y-4 py-4">
-                      {Object.values(proprietario).length === 0 ? (
-                        <>
-                          <div className="space-y-1 mt-6">
-                            <label htmlFor="type">
-                              Pessoa física ou jurídica:
-                            </label>
-                            <select
-                              className="bg-gray-50 border border-gray-300 text-stone-700 text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block w-full p-2 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                              value={tipoPessoa}
-                              onChange={handleTipoPessoaChange}
-                            >
-                              <option value="">Física ou Jurídica</option>
-                              <option value="pessoa-fisica">
-                                Pessoa física
-                              </option>
-                              <option value="pessoa-juridica">
-                                Pessoa jurídica
-                              </option>
-                            </select>
-                          </div>
-                          {renderizarFormulario()}
-                        </>
-                      ) : (
+                      <div className="space-y-1 mt-6">
+                        <label htmlFor="type">Pessoa física ou jurídica:</label>
+                        <select
+                          className="bg-gray-50 border border-gray-300 text-stone-700 text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block w-full p-2 dark:bg-stone-900 dark:border-blue-900 dark:placeholder-stone-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                          value={tipoPessoa}
+                          onChange={handleTipoPessoaChange}
+                        >
+                          <option value="">Física ou Jurídica</option>
+                          <option value="pessoa-fisica">Pessoa física</option>
+                          <option value="pessoa-juridica">
+                            Pessoa jurídica
+                          </option>
+                        </select>
+                      </div>
+                      {renderizarFormulario()}
+
+                      {Object.keys(proprietario) > 0 && (
                         <div className="w-full flex gap-1 mt-6 mb-3">
                           <span className="font-semibold">
                             Proprietário deste imóvel:{" "}

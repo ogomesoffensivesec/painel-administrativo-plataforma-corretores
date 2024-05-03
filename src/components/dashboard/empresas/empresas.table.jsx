@@ -13,6 +13,7 @@ import { useQuery } from "react-query";
 import PaginationComponent from "../empreendimentos/pagination";
 import { getEmpresas } from "./empresas.data";
 import DocumentosEmpresa from "./empresa.documentos";
+import EmpresaInfos from "./empresas.infos";
 
 function TabelaEmpresas() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -63,7 +64,9 @@ function TabelaEmpresas() {
                       empresa={empresa}
                     />
                   </TableCell>
-                  <TableCell>{}</TableCell>
+                  <TableCell>
+                    <EmpresaInfos empresa={empresa} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
