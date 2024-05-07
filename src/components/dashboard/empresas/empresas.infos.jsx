@@ -59,7 +59,9 @@ function EmpresaInfos({ empresa }) {
                   <span className="font-bold text-stone-800">Sócios:</span>
                   {empresa.socios &&
                     empresa.socios.map((socio) => (
-                      <span>{socio.nome || socio.razaoSocial}</span>
+                      <span key={socio.id}>
+                        {socio.nome || socio.razaoSocial}
+                      </span>
                     ))}
                 </li>
               </ul>
