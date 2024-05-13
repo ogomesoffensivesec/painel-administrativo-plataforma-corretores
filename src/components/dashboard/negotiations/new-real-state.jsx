@@ -346,7 +346,11 @@ function NewNegotiationDialog() {
         area_total: "",
       });
     };
-
+  const handleDelete = (index) => {
+    const updatedDocumentos = [...tiposDocumentos];
+    updatedDocumentos.splice(index, 1);
+    setTiposDocumentos(updatedDocumentos);
+  };
     const searchCep = async () => {
       setLoadingCep(true);
       try {

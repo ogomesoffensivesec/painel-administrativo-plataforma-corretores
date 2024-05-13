@@ -91,10 +91,7 @@ function EmpresaInfos({ empresa }) {
   const handleCadastroSocio = () => {
     if (!socio.cnpj) {
       const novoSocio = cadastrarSocio();
-      console.log("Sócio CPF");
-      console.log(novoSocio);
       setSocios([...socios, novoSocio]);
-      console.log(socios);
     } else {
       const novoSocio = {
         socio,
@@ -128,7 +125,7 @@ function EmpresaInfos({ empresa }) {
     const sociosFiltrados = socios.filter((sco) => sco.email !== email);
     setSocios(sociosFiltrados);
   };
-
+  
   const renderizarFormulario = () => {
     if (tipoPessoa === "pessoa-fisica") {
       return (
