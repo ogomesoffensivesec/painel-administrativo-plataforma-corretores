@@ -646,6 +646,24 @@ export function DataProvider({ children }) {
     }
   }
 
+
+  async function atualizarDados(type, id, data) {
+    try {
+      const referenciaDados = ref(database, `${type}/${id}`)
+      await update(referenciaDados, data)
+      toast({
+        title: 'Dados atualizados com sucesso!',
+        variant: "success"
+      })
+    } catch (error) {
+      console.error(error.message);
+      toast({
+        title: 'Erro ao atualizar os dados!',
+        description: 'Verifique sua conexão!',
+        variant: 'destructive'
+      })
+    }
+  }
   return (
     <DataContext.Provider value={{
       create,
@@ -670,7 +688,8 @@ export function DataProvider({ children }) {
       deletarDocumento,
       renomearDocumento, empresas,
       createEmpresa,
-      imoveis
+      imoveis,
+      atualizarDados
     }}>
       {children}
     </DataContext.Provider>

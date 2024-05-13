@@ -94,11 +94,14 @@ function NovaEmpresa() {
       [tipoDocumento]: filesArray,
     }));
   };
+
+
   const handleDelete = (index) => {
     const updatedDocumentos = [...tiposDocumentos];
     updatedDocumentos.splice(index, 1);
     setTiposDocumentos(updatedDocumentos);
   };
+
   const handleSaveTipoDocumento = () => {
     if (tipoDocumento === "") {
       toast({
@@ -241,8 +244,8 @@ function NovaEmpresa() {
               <SelectContent>
                 {empresas &&
                   empresas.map((empresa) => (
-                    <SelectItem key={empresa.razaoSocial} value={item}>
-                      {item.razaoSocial}
+                    <SelectItem key={empresa.razaoSocial} value={empresa}>
+                      {empresa.razaoSocial}
                     </SelectItem>
                   ))}
               </SelectContent>
