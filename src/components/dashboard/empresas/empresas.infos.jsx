@@ -263,7 +263,10 @@ function EmpresaInfos({ empresa }) {
               {!editarEmpresa && (
                 <ul className="space-y-3">
                   <li>
-                    <strong>Identificação:</strong> {empresa.razaoSocial}
+                    <strong>Razão social:</strong> {empresa.razaoSocial}
+                  </li>
+                  <li>
+                    <strong>CNPJ:</strong> {empresa.cnpj}
                   </li>
                   <li className="w-full flex flex-col">
                     <span>
