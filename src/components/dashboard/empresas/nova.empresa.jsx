@@ -140,18 +140,15 @@ function NovaEmpresa() {
   };
 
   const handleCadastroSocio = () => {
-    if (!socio.cnpj) {
+    if (formValues.cpf) {
       const novoSocio = cadastrarSocio();
-      console.log("Sócio CPF");
-      console.log(novoSocio);
       setSocios([...socios, novoSocio]);
       console.log(socios);
     } else {
-      const novoSocio = {
-        socio,
-        id: v4(),
-      };
-      setSocios([...socios, novoSocio]);
+      const empresaSociaEncontrada = empresas.find((emp) => emp.id === socio);
+      console.log("encontrado");
+      console.log(empresaSociaEncontrada);
+      setSocios([...socios, empresaSociaEncontrada]);
     }
     if (tipoPessoa === "pessoa-juridica") {
       setFormValues({
@@ -168,6 +165,7 @@ function NovaEmpresa() {
         telefone: "",
       });
     }
+    setSocio({});
   };
   const [tipoPessoa, setTipoPessoa] = useState("");
 
@@ -244,7 +242,7 @@ function NovaEmpresa() {
               <SelectContent>
                 {empresas &&
                   empresas.map((empresa) => (
-                    <SelectItem key={empresa.razaoSocial} value={empresa}>
+                    <SelectItem key={empresa.id} value={empresa.id}>
                       {empresa.razaoSocial}
                     </SelectItem>
                   ))}

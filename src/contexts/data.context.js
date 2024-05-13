@@ -664,6 +664,23 @@ export function DataProvider({ children }) {
       })
     }
   }
+  async function apagarDados(id, queryClient) {
+    try {
+      const referenciaStorage = storageRef(storage, `/empresas/${id}`)
+      const referenciaDatabase = ref(database, `/empresas/${id}`)
+
+      await remove(referenciaDatabase)
+      toast({ title: 'Empresa excluída com sucesso!', variant: 'success' })
+    } catch (error) {
+      toast({
+        title: 'Erro ao excluir empresa!',
+        description: 'Verifique sua conexão com a internet!',
+        variant: 'destructive'
+      })
+    } finally {
+      queryClient.invalidateQueries({ queryKey: ["empresas"] });
+    }
+  }
   return (
     <DataContext.Provider value={{
       create,
@@ -689,7 +706,7 @@ export function DataProvider({ children }) {
       renomearDocumento, empresas,
       createEmpresa,
       imoveis,
-      atualizarDados
+      atualizarDados, apagarDados
     }}>
       {children}
     </DataContext.Provider>

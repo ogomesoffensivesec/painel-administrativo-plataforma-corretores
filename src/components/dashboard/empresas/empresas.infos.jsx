@@ -55,7 +55,7 @@ function EmpresaInfos({ empresa }) {
   const [cep, setCep] = useState("");
   const [address, setAddress] = useState({});
   const [loadingCep, setLoadingCep] = useState(false);
-  const { empresas, atualizarDados } = useData();
+  const { empresas, atualizarDados, apagarDados } = useData();
   const [socio, setSocio] = useState({});
   const [socios, setSocios] = useState([]);
 
@@ -89,15 +89,18 @@ function EmpresaInfos({ empresa }) {
   };
 
   const handleCadastroSocio = () => {
-    if (formValues.cpf) {
+    if (!socio.cnpj) {
       const novoSocio = cadastrarSocio();
+      console.log("Sócio CPF");
+      console.log(novoSocio);
       setSocios([...socios, novoSocio]);
       console.log(socios);
     } else {
-      const empresaSociaEncontrada = empresas.find((emp) => emp.id === socio);
-      console.log("encontrado");
-      console.log(empresaSociaEncontrada);
-      setSocios([...socios, empresaSociaEncontrada]);
+      const novoSocio = {
+        socio,
+        id: v4(),
+      };
+      setSocios([...socios, novoSocio]);
     }
     if (tipoPessoa === "pessoa-juridica") {
       setFormValues({
@@ -114,7 +117,6 @@ function EmpresaInfos({ empresa }) {
         telefone: "",
       });
     }
-    setSocio({});
   };
   const [tipoPessoa, setTipoPessoa] = useState("");
 
@@ -250,13 +252,23 @@ function EmpresaInfos({ empresa }) {
         <DialogHeader>
           <div className="w-full flex justify-between items-center pr-4">
             <DialogTitle>Informações da empresa</DialogTitle>
-            <Button
-              size="xs"
-              type="button"
-              onClick={() => setEditarEmpresa(!editarEmpresa)}
-            >
-              Editar dados
-            </Button>
+            <div className="flex gap-1 items-center">
+              <Button
+                size="xs"
+                type="button"
+                onClick={() => setEditarEmpresa(!editarEmpresa)}
+              >
+                Editar dados
+              </Button>
+              <Button
+                size="xs"
+                type="button"
+                variant="destructive"
+                onClick={() => apagarDados(empresa.id, queryClient)}
+              >
+                Apagar empresa
+              </Button>
+            </div>
           </div>
           <Card>
             <CardContent className="py-4">
