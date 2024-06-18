@@ -38,6 +38,7 @@ function TabelaCorretores() {
     await fetchUser(id);
     setOpen(!open);
   };
+  
   if (isLoading) return "Carregando resultados...";
   if (error) return "An error has occurred: " + error.message;
   let startIndex;

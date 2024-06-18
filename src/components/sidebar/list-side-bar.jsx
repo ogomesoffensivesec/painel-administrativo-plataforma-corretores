@@ -8,6 +8,7 @@ import {
   BetweenHorizonalEnd,
   Building2,
   CalendarCheck,
+  FileIcon,
   HomeIcon,
   LogOut,
   Pencil,
@@ -102,6 +103,12 @@ function ListSideBar({ userFake }) {
       icon: <CalendarCheck className="w-6 h-6" />,
       selected: segment === "visitas" ? true : false,
       href: "/dashboard/visitas",
+    },
+    {
+      text: "Certificados",
+      icon: <FileIcon className="w-6 h-6" />,
+      selected: segment === "certificados" ? true : false,
+      href: "/dashboard/certificados",
     },
   ];
   return (

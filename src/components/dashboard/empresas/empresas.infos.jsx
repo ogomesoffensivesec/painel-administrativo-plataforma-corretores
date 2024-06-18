@@ -15,27 +15,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import {
-  LargeDialog,
-  LargeDialogClose,
-  LargeDialogContent,
-  LargeDialogFooter,
-  LargeDialogHeader,
-  LargeDialogTitle,
-  LargeDialogTrigger,
-} from "@/components/ui/large-dialog";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchCep } from "@/services/viacep";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Form } from "@/components/ui/form";
-import { useToast } from "@/components/ui/use-toast";
 import useData from "@/hooks/useData";
-import JSZip from "jszip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, Trash, XCircle } from "lucide-react";
+import { Trash, XCircle } from "lucide-react";
 import { v4 } from "uuid";
 import {
   Select,
@@ -62,6 +50,7 @@ function EmpresaInfos({ empresa }) {
   useEffect(() => {
     if (empresa.socios) setSocios(empresa.socios);
   }, []);
+
   const queryClient = useQueryClient();
   const [formValues, setFormValues] = useState({
     razaoSocial: "",
@@ -125,7 +114,7 @@ function EmpresaInfos({ empresa }) {
     const sociosFiltrados = socios.filter((sco) => sco.email !== email);
     setSocios(sociosFiltrados);
   };
-  
+
   const renderizarFormulario = () => {
     if (tipoPessoa === "pessoa-fisica") {
       return (
