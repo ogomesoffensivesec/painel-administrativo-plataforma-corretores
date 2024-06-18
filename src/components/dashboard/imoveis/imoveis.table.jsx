@@ -12,7 +12,6 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "react-query";
 import PaginationComponent from "../empreendimentos/pagination";
 import { getImoveis } from "./imoveis.data";
-import { Button } from "@/components/ui/button";
 import DocumentosImovel from "./imovel.documentos";
 import InfosImoveis from "./imoveis.infos";
 
