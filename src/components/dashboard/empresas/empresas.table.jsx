@@ -14,6 +14,7 @@ import PaginationComponent from "../empreendimentos/pagination";
 import { getEmpresas } from "./empresas.data";
 import DocumentosEmpresa from "./empresa.documentos";
 import EmpresaInfos from "./empresas.infos";
+import Link from "next/link";
 
 function TabelaEmpresas() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,7 +66,9 @@ function TabelaEmpresas() {
                     />
                   </TableCell>
                   <TableCell>
-                    <EmpresaInfos empresa={empresa} />
+                    <Link href={`/dashboard/empresas/${empresa.id}`} rel="noopener noreferrer">
+                      Informações
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}
