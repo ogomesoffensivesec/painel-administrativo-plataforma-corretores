@@ -19,7 +19,16 @@ import { useRouter } from "next/navigation";
 
 dayjs.extend(relativeTime);
 dayjs.locale("pt-br");
-
+export const internalProblems = [
+  { value: "internetDown", label: "Sem acesso à internet" },
+  { value: "printerNotWorking", label: "Impressora não imprime" },
+  { value: "computerSlow", label: "Computador está lento" },
+  { value: "softwareNotWorking", label: "Software não está funcionando" },
+  { value: "cantConnect", label: "Não consigo conectar à rede" },
+  { value: "emailNotSending", label: "E-mail não está sendo enviado" },
+  { value: "hardwareBroken", label: "Hardware quebrado" },
+  { value: "other", label: "Outro problema (explique na descrição)" },
+];
 export function DemmandTable() {
   const router = useRouter();
   const [demmands, setDemmands] = useState([]);
@@ -45,16 +54,7 @@ export function DemmandTable() {
     { value: "finance", label: "Financeiro - Maria Santos" },
     { value: "marketing", label: "Marketing - Ana Oliveira" },
   ];
-  const internalProblems = [
-    { value: "internetDown", label: "Sem acesso à internet" },
-    { value: "printerNotWorking", label: "Impressora não imprime" },
-    { value: "computerSlow", label: "Computador está lento" },
-    { value: "softwareNotWorking", label: "Software não está funcionando" },
-    { value: "cantConnect", label: "Não consigo conectar à rede" },
-    { value: "emailNotSending", label: "E-mail não está sendo enviado" },
-    { value: "hardwareBroken", label: "Hardware quebrado" },
-    { value: "other", label: "Outro problema (explique na descrição)" },
-  ];
+
   return (
     demmands.length > 0 && (
       <Table>

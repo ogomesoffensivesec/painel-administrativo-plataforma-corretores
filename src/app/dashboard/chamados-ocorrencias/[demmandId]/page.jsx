@@ -12,7 +12,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -27,7 +27,6 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
 import "dayjs/locale/pt-br";
 import { UpsertActionDemmand } from "./_components/upsert-action-on-demman";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -47,13 +46,7 @@ export default function Page({ params }) {
     });
   }, [params.demmandId]);
 
-  const router = useRouter();
-  const sectors = [
-    { value: "ti", label: "T.I - Igor Gomes" },
-    { value: "rh", label: "Recursos Humanos - João Silva" },
-    { value: "finance", label: "Financeiro - Maria Santos" },
-    { value: "marketing", label: "Marketing - Ana Oliveira" },
-  ];
+
   const internalProblems = [
     { value: "internetDown", label: "Sem acesso à internet" },
     { value: "printerNotWorking", label: "Impressora não imprime" },

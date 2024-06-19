@@ -2,6 +2,8 @@ import { initializeApp } from "firebase/app";
 import { GoogleAuthProvider, getAuth } from "firebase/auth"
 import { getDatabase } from 'firebase/database'
 import { getStorage } from 'firebase/storage'
+import { getMessaging } from "firebase/messaging";
+
 const firebaseConfig = {
   apiKey: process.env.apiKey,
   authDomain: process.env.authDomain,
@@ -19,6 +21,5 @@ const database = getDatabase(app)
 const storage = getStorage(app)
 const auth = getAuth(app)
 const provider = new GoogleAuthProvider()
-
 
 export { app, auth, provider, database, storage }

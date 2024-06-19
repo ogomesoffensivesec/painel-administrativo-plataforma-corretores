@@ -22,6 +22,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { sendMessageBot } from "@/services/bot-sender";
+import dayjs from "dayjs";
+import { internalProblems } from "../../_components/demmand-table";
 
 export function UpsertActionDemmand({ demmand }) {
   const { register, handleSubmit, reset } = useForm();
@@ -77,7 +80,18 @@ export function UpsertActionDemmand({ demmand }) {
       const uploadUrls = await uploadTasks;
       data.prints = uploadUrls;
       await set(referenciaDataBase, data);
-      console.log(data);
+
+      const formattedDate = dayjs(data.createdAt).format("DD/MM/YYYY HH:mm a");
+
+      const internal =
+        internalProblems.find((problem) => problem.value === demmand.issueType)
+          ?.label ?? demmand.issueType;
+      await sendMessageBot(
+        "11993420447",
+        formattedDate,
+        data.currentUser,
+        internal
+      );
       toast({
         title: "Ação adicionada com sucesso!",
         description: "Sua ação foi adicionada com sucesso!",
