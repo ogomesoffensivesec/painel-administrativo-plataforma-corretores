@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ConfirmDownloadCertificate } from "./confirm-download-certificate";
 
 export function CertificatesTable() {
   const [certificates, setCertificates] = useState([]);
@@ -62,25 +63,13 @@ export function CertificatesTable() {
                 (expirationDate - currentDate) / (1000 * 3600 * 24)
               );
               return (
-                <TableRow key={certificate.id} className='w-full'>
-                  <TableCell className="w-[250px]">
+                <TableRow key={certificate.id} className="w-full">
+                  <TableCell className="w-[170px]">
                     {certificate.name}
                   </TableCell>
-                  <TableCell
-                    style={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
+                  <TableCell className=" w-[170px] overflow-hidden text-ellipsis">
                     {certificate.file.map((file) => (
-                      <a
-                        key={file.id}
-                        href={file.url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {file.name}
-                      </a>
+                  <ConfirmDownloadCertificate file={file} key={file.id}/>
                     ))}
                   </TableCell>
                   <TableCell>{formateedCreatedDate}</TableCell>

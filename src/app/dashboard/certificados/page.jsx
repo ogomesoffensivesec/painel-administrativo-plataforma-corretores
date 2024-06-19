@@ -31,7 +31,10 @@ export default function Page() {
                   <UpsertCert>Adicionar certificado</UpsertCert>
                 )}
               </div>
-              <div className="p-6 w-fullmx-auto ">
+              <div className="p-6 w-full mx-auto space-y-4 ">
+                <span className="text-xl font-bold text-indigo-600 ">
+                  Consulta de certificados digitais tipo A1
+                </span>
                 <CertificatesTable />
               </div>
             </div>
