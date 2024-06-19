@@ -32,14 +32,12 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
+import { sendMessageBot } from "@/services/bot-sender";
 export function UpsertDemmand() {
   const { register, handleSubmit, setValue, reset } = useForm();
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState([]);
-  const sectors = [
-    { value: "ti", label: "T.I - Igor Gomes" },
-
-  ];
+  const sectors = [{ value: "ti", label: "T.I - Igor Gomes" }];
   const [checked, setChecked] = useState(false);
   const internalProblems = [
     { value: "internetDown", label: "Sem acesso à internet" },
@@ -60,8 +58,14 @@ export function UpsertDemmand() {
     { value: "usbNotRecognized", label: "Dispositivo USB não reconhecido" },
     { value: "batteryNotCharging", label: "Bateria não está carregando" },
     { value: "emailLoginIssue", label: "Problema de login no e-mail" },
-    { value: "emailPasswordReset", label: "Senha do e-mail precisa ser resetada" },
-    { value: "emailSpamFilter", label: "E-mail está sendo bloqueado pelo filtro de spam" },
+    {
+      value: "emailPasswordReset",
+      label: "Senha do e-mail precisa ser resetada",
+    },
+    {
+      value: "emailSpamFilter",
+      label: "E-mail está sendo bloqueado pelo filtro de spam",
+    },
     { value: "emailAttachmentIssue", label: "Problema com anexos no e-mail" },
   ];
   const router = useRouter();
@@ -84,7 +88,7 @@ export function UpsertDemmand() {
       return;
     }
 
-    data.currentUser = user.displayName || user.email;
+    data.currentUser =  user.email;
     data.prints = files;
 
     data.id = v4();
@@ -112,7 +116,17 @@ export function UpsertDemmand() {
       const uploadUrls = await uploadTasks;
       data.prints = uploadUrls;
       await set(referenciaDataBase, data);
-      console.log(data);
+      const formattedDate = dayjs(data.createdAt).format("DD/MM/YYYY HH:mm a");
+
+      const internal =
+        internalProblems.find((problem) => problem.value === data.issueType)
+          ?.label ?? data.issueType;
+      await sendMessageBot(
+        "11993420447",
+        formattedDate,
+        data.currentUser,
+        internal
+      );
       toast({
         title: "Chamado registrado com sucesso!",
         description:

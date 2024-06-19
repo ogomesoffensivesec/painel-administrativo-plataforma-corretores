@@ -41,11 +41,15 @@ export default function Page({ params }) {
       if (snapshot.exists()) {
         setDemmand(snapshot.val());
         const actionsArray = snapshot.val().actions;
-        setActions(Object.values(actionsArray));
+        if (actionsArray) {
+          const sortedActions = Object.values(actionsArray).sort(
+            (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix()
+          );
+          setActions(sortedActions);
+        }
       }
     });
   }, [params.demmandId]);
-
 
   const internalProblems = [
     { value: "internetDown", label: "Sem acesso à internet" },
@@ -59,7 +63,7 @@ export default function Page({ params }) {
   ];
   return (
     demmand && (
-      <div className="container mx-auto py-8">
+      <div className=" mx-auto p-8">
         <Breadcrumb className="py-6">
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -120,7 +124,9 @@ export default function Page({ params }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="h-[330px]">
             <CardHeader>
-              <CardTitle className="text-lg font-medium">Detalhes do Chamado</CardTitle>
+              <CardTitle className="text-lg font-medium">
+                Detalhes do Chamado
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-2 mb-4">
@@ -175,38 +181,49 @@ export default function Page({ params }) {
               </div>
               <CardDescription>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-md font-medium">Descrição</span>
+                  <span className="text-md  text-gray-800 font-medium">
+                    Descrição
+                  </span>
                 </div>
-                <p className="text-gray-500 mb-2 text-sm">
-                  Usuários estavam tendo dificuldades para acessar o sistema devido
-                  a um problema no módulo de autenticação.
+                <p className="text-gray-500 font-normal mb-2 text-sm capitalize">
+                  {demmand.problemDescription}
                 </p>
               </CardDescription>
             </CardContent>
           </Card>
           <Card className="h-auto col-span-2">
             <CardHeader>
-              <CardTitle className="text-lg font-medium">Histórico de Atualizações</CardTitle>
+              <CardTitle className="text-lg font-medium">
+                {demmand.actions && <span>Histórico de Atualizações</span>}
+                {!demmand.actions && (
+                  <div>Este chamado ainda não teve atualizações.</div>
+                )}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-4">
-                <ScrollArea className="h-[500px] pr-4 ">
+                <ScrollArea
+                  className={`${
+                    actions.length > 0 ? "max-h-[500px] pr-4" : "h-auto pr-4"
+                  } >`}
+                >
                   {actions.length > 0 &&
                     actions.map((action, index) => (
-                      <div
-                        key={index}
-                        className="flex flex-col  gap-4 mb-2"
-                      >
+                      <div key={index} className="flex flex-col  gap-4 mb-2">
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
+                              Usuário:
                               <span className="font-medium">
                                 {action.currentUser}
                               </span>
                               <CheckCheckIcon className="w-4 h-4 text-green-500" />
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-500">
-                              <span> {dayjs().to(dayjs(action.createdAt))}</span>
+                              <span>
+                                {" "}
+                                {dayjs().to(dayjs(action.createdAt))}
+                              </span>
                             </div>
                           </div>
                           <p className="text-gray-600 text-sm">
@@ -214,6 +231,7 @@ export default function Page({ params }) {
                           </p>
                           <Button
                             size="xs"
+                            disabled={!action.prints}
                             className="mt-3"
                             onClick={() => {
                               Object.values(action.prints).forEach((print) => {
@@ -228,14 +246,8 @@ export default function Page({ params }) {
                       </div>
                     ))}
                 </ScrollArea>
-                {!demmand.actions && (
-                  <div>Este chamado ainda não teve atualizações.</div>
-                )}
               </div>
             </CardContent>
-            <CardFooter>
-              {/* Add footer content here */}
-            </CardFooter>
           </Card>
         </div>
       </div>

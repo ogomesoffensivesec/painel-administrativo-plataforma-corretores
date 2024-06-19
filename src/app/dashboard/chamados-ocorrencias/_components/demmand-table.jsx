@@ -39,9 +39,10 @@ export function DemmandTable() {
       if (snapshot.exists()) {
         const demmandsArray = Object.values(snapshot.val()).filter(
           (demmand) =>
-            demmand.currentUser === user?.displayName ||
+
             demmand.currentUser === user?.email
         );
+        console.log(demmandsArray);
         setDemmands(demmandsArray);
       }
     });

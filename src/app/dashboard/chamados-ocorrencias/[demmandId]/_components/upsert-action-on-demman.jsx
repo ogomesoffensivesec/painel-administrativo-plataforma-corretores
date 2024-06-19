@@ -51,7 +51,7 @@ export function UpsertActionDemmand({ demmand }) {
       return;
     }
 
-    data.currentUser = user.displayName || user.email;
+    data.currentUser =  user.email;
     data.prints = files;
     data.id = v4();
     data.createdAt = new Date().toISOString();
