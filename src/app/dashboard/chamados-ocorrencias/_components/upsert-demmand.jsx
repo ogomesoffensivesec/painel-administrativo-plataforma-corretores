@@ -38,9 +38,7 @@ export function UpsertDemmand() {
   const [files, setFiles] = useState([]);
   const sectors = [
     { value: "ti", label: "T.I - Igor Gomes" },
-    { value: "rh", label: "Recursos Humanos - João Silva" },
-    { value: "finance", label: "Financeiro - Maria Santos" },
-    { value: "marketing", label: "Marketing - Ana Oliveira" },
+
   ];
   const [checked, setChecked] = useState(false);
   const internalProblems = [
@@ -52,6 +50,19 @@ export function UpsertDemmand() {
     { value: "emailNotSending", label: "E-mail não está sendo enviado" },
     { value: "hardwareBroken", label: "Hardware quebrado" },
     { value: "other", label: "Outro problema (explique na descrição)" },
+    { value: "monitorNotTurningOn", label: "Monitor não liga" },
+    { value: "keyboardNotWorking", label: "Teclado não está funcionando" },
+    { value: "mouseNotWorking", label: "Mouse não está funcionando" },
+    { value: "scannerNotWorking", label: "Scanner não está funcionando" },
+    { value: "projectorNotWorking", label: "Projetor não está funcionando" },
+    { value: "audioNotWorking", label: "Áudio não está funcionando" },
+    { value: "videoNotWorking", label: "Vídeo não está funcionando" },
+    { value: "usbNotRecognized", label: "Dispositivo USB não reconhecido" },
+    { value: "batteryNotCharging", label: "Bateria não está carregando" },
+    { value: "emailLoginIssue", label: "Problema de login no e-mail" },
+    { value: "emailPasswordReset", label: "Senha do e-mail precisa ser resetada" },
+    { value: "emailSpamFilter", label: "E-mail está sendo bloqueado pelo filtro de spam" },
+    { value: "emailAttachmentIssue", label: "Problema com anexos no e-mail" },
   ];
   const router = useRouter();
   function handleChangeFiles(e) {
