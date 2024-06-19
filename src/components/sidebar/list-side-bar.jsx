@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import useAuth from "@/hooks/useAuth";
 import {
   ArrowLeftRight,
+  Bell,
   BetweenHorizonalEnd,
   Building2,
   CalendarCheck,
@@ -109,6 +110,12 @@ function ListSideBar({ userFake }) {
       icon: <FileIcon className="w-6 h-6" />,
       selected: segment === "certificados" ? true : false,
       href: "/dashboard/certificados",
+    },
+    {
+      text: "Chamados e Ocorrências",
+      icon: <Bell className="w-6 h-6" />,
+      selected: segment === "chamados-ocorrencias" ? true : false,
+      href: "/dashboard/chamados-ocorrencias",
     },
   ];
   return (

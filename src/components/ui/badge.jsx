@@ -4,39 +4,30 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-sm border px-2.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
         default:
-          "border-[1px] border-blue-600 bg-blue-600/40    text-stone-700 shadow hover:bg-blue-600 hover:text-white select-none cursor-pointer",
-        analysis:
-          "border-[1px] border-amber-400 bg-amber-100/70  hover:bg-secondary/80 text-xs hover:text-stone-500 dark:hover:text-white  text-stone-900 select-none cursor-pointer",
+          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
         secondary:
-          "border-[transparent] bg-secondary text-secondary-foreground hover:bg-secondary/80 select-none cursor-pointer",
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80 select-none cursor-pointer",
-        outline:
-          "text-foreground border-[1px] border-stone-600 bg-stone-500/40",
-      },
-      size: {
-        default: "py-0.5",
-        lg: "py-1.5",
+          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
+        warning:
+          " border-[1px] border-amber-600 bg-amber-400/20 text-xs  text-amber-600 font-normal shadow hover:bg-amber-400/50",
+        outline: "text-foreground",
       },
     },
     defaultVariants: {
       variant: "default",
-      size: "default",
     },
   }
 );
 
-function Badge({ className, variant, size, ...props }) {
+function Badge({ className, variant, ...props }) {
   return (
-    <div
-      className={cn(badgeVariants({ variant, size }), className)}
-      {...props}
-    />
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
   );
 }
 
