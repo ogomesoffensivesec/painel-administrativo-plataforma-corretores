@@ -27,7 +27,7 @@ function EmpreendimentoCard() {
   }, []);
   return (
     empreendimentos && (
-      <Card className="lg:w-[300px]   bg-white dark:bg-stone-800 border-solid border-[1px] border-stone-400 dark:border-stone-500">
+      <Card className="lg:w-[300px]   ">
         <CardHeader>
           <CardTitle className="text-blue-500 dark:text-blue-400 flex justify-between items-center mb-2">
             <span> Empreendimentos cadastrados</span>

@@ -9,10 +9,15 @@ import {
   BetweenHorizonalEnd,
   Building2,
   CalendarCheck,
+  Currency,
+  CurrencyIcon,
+  DollarSignIcon,
   FileIcon,
   HomeIcon,
   LogOut,
   Pencil,
+  ShoppingBag,
+  ShoppingCart,
   Users,
 } from "lucide-react";
 import Image from "next/image";
@@ -112,10 +117,22 @@ function ListSideBar({ userFake }) {
       href: "/dashboard/certificados",
     },
     {
-      text: "Chamados e Ocorrências",
+      text: "Chamados",
       icon: <Bell className="w-6 h-6" />,
       selected: segment === "chamados-ocorrencias" ? true : false,
       href: "/dashboard/chamados-ocorrencias",
+    },
+    {
+      text: "Compras",
+      icon: <ShoppingCart className="w-6 h-6" />,
+      selected: segment === "pedidos-e-compras" ? true : false,
+      href: "/dashboard/pedidos-e-compras",
+    },
+    {
+      text: "Financeiro",
+      icon: <DollarSignIcon className="w-6 h-6" />,
+      selected: segment === "financeiro" ? true : false,
+      href: "/dashboard/financeiro",
     },
   ];
   return (

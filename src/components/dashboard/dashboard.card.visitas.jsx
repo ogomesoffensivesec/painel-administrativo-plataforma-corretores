@@ -11,7 +11,6 @@ import { useEffect, useState } from "react";
 import { onValue, ref } from "firebase/database";
 import { database } from "@/database/config/firebase";
 
-// import { Container } from './styles';
 
 function VisitasCard() {
   const [visits, setVisits] = useState([]);
@@ -31,7 +30,7 @@ function VisitasCard() {
 
   return (
     visits && (
-      <Card className="lg:w-[300px]   bg-white dark:bg-stone-800 border-solid border-[1px] border-stone-400 dark:border-stone-500">
+      <Card>
         <CardHeader>
           <CardTitle className="text-blue-500 dark:text-blue-400 flex justify-between items-center">
             <span> Visitas agendadas</span>
@@ -46,19 +45,6 @@ function VisitasCard() {
             {visits.length} agendadas
           </span>
         </CardContent>
-        {/*
-       <CardFooter>
-        <div className="flex gap-2 text-stone-900 dark:text-stone-100 text-sm">
-          {cardInformation.content.secondaryIcon}
-          <div className="w-full flex gap-1 items-center">
-            <span>{cardInformation.content.secondary}</span>
-            <span className="text-blue-500">
-              {cardInformation.content.secondaryEmphasys}
-            </span>
-          </div>
-        </div>
-      </CardFooter>
-    */}
       </Card>
     )
   );

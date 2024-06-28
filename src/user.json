@@ -1,0 +1,42 @@
+[
+  {
+    "displayName": "User 1",
+    "email": "financeiro@grupoindcon.com.br",
+    "hashPassword": "hash64",
+    "resolverPassword": "hash64",
+    "phone": "(11) 98765-4321",
+    "createdAt": "2023-03-15T00:00:00.000Z",
+    "updatedAt": "2023-03-15T00:00:00.000Z",
+    "photoUrl": "user1_photo_url"
+  },
+  {
+    "displayName": "User 2",
+    "email": "gomes.rootkit@gmail.com",
+    "hashPassword": "hash64",
+    "resolverPassword": "hash64",
+    "phone": "(21) 99876-5432",
+    "createdAt": "2023-03-15T00:00:00.000Z",
+    "updatedAt": "2023-03-15T00:00:00.000Z",
+    "photoUrl": "user2_photo_url"
+  },
+  {
+    "displayName": "User 3",
+    "email": "desenvolvimento@ogcoder.com.br",
+    "hashPassword": "hash64",
+    "resolverPassword": "hash64",
+    "phone": "(31) 98765-1234",
+    "createdAt": "2023-03-15T00:00:00.000Z",
+    "updatedAt": "2023-03-15T00:00:00.000Z",
+    "photoUrl": "user3_photo_url"
+  },
+  {
+    "displayName": "User 4",
+    "email": "comercial@make-home.com.br",
+    "hashPassword": "hash64",
+    "resolverPassword": "hash64",
+    "phone": "(41) 99876-5432",
+    "createdAt": "2023-03-15T00:00:00.000Z",
+    "updatedAt": "2023-03-15T00:00:00.000Z",
+    "photoUrl": "user4_photo_url"
+  }
+]

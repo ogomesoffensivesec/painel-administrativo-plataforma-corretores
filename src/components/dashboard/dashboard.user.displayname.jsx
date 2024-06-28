@@ -2,27 +2,22 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "../ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { auth } from "@/database/config/firebase";
-import { updateProfile } from "firebase/auth";
 import { toast } from "../ui/use-toast";
-import { useRouter } from "next/navigation";
 import useAuth from "@/hooks/useAuth";
+import { auth } from "@/database/config/firebase";
 
 function SetUserDisplayName({ open, setOpenDialogVerifyUser }) {
   const [username, setUsername] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const { changeUserData } = useAuth();
+  const user = auth.currentUser;
 
-  const router = useRouter();
   const salvarNomeUsuario = async () => {
     if (username === "") {
       toast({
@@ -49,11 +44,16 @@ function SetUserDisplayName({ open, setOpenDialogVerifyUser }) {
       setUsername("");
     }
   };
+
   return (
     <Dialog open={open}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Você ainda não definiu seu nome de usuário</DialogTitle>
+          <DialogTitle>
+            {!user.displayName
+              ? "Você ainda não definiu seu nome de usuário"
+              : "Alterar nome de usuário"}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-3 flex flex-col items-end">
           <Input

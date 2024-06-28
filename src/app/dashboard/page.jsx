@@ -17,6 +17,8 @@ import SetUserDisplayName from "@/components/dashboard/dashboard.user.displaynam
 import { UsersProvider } from "@/contexts/user.context";
 import Imoveis from "./imoveis/page";
 import ImoveisCard from "@/components/dashboard/dashboard.card.imovel";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ChamadosDashboard } from "@/components/dashboard/dashboard-chamados-count";
 
 export default function Home() {
   const { user, openDialogVerifyUser, setOpenDialogVerifyUser } = useAuth();
@@ -43,7 +45,7 @@ export default function Home() {
   }
 
   return user ? (
-    <div className=" w-full p-10  gap-12 flex flex-col flex-wrap bg-stone-100 dark:bg-stone-950">
+    <div className=" w-full h-screen p-10  gap-4 flex flex-col flex-wrap bg-stone-100 dark:bg-stone-950">
       <UsersProvider>
         <SetUserDisplayName
           open={openDialogVerifyUser}
@@ -59,25 +61,41 @@ export default function Home() {
           </div>
           <div>
             <Popover>
-              <PopoverTrigger className="flex items-center justify-center gap-3">
+              <PopoverTrigger className="flex items-center bg-blue-100 rounded-full p-2 justify-center gap-3">
                 <Bell
-                  size={24}
+                  size={16}
                   strokeWidth={2}
                   className="text-blue-600 font-bold"
                   fill="#2563eb"
                 />
               </PopoverTrigger>
               <PopoverContent>
-                {/* <DashboardNotifications  notifications={notifications}/> */}
                 Aqui ficará o componente de notificações
               </PopoverContent>
             </Popover>
           </div>
         </div>
-
-        <div className="w-full ">
-          <DashboardVisit />
-          {/* <DashboardNotifications notifications={notifications} /> */}
+        <div className="w-full flex gap-4">
+          <div className="w-[637px] ">
+            <Card>
+              <CardHeader className="text-2lg text-blue-600 pb-3 font-bold ">
+                Agendar visita ao imóvel
+              </CardHeader>
+              <CardContent>
+                <DashboardVisit />
+              </CardContent>
+            </Card>
+          </div>
+          {/* <div className="w-[307px]">
+            <Card>
+              <CardHeader className="text-2lg text-blue-600 pb-3 font-bold ">
+                Chamados de garantia
+              </CardHeader>
+              <CardContent>
+                <ChamadosDashboard />
+              </CardContent>
+            </Card>
+          </div> */}
         </div>
       </UsersProvider>
     </div>

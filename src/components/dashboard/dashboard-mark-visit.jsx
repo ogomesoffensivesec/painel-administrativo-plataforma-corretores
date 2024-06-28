@@ -110,9 +110,7 @@ function DashboardVisit() {
   }
   return (
     <div className="w-full flex flex-col py-2 space-y-3  ">
-      <span className="text-xl font-bold text-stone-800 dark:text-white">
-        Agendar visita ao imóvel
-      </span>
+      
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="w-full  flex flex-col  ">
           <div className="flex flex-col  gap-2 w-full ">
@@ -184,7 +182,8 @@ function DashboardVisit() {
             </div>
           </div>
         </div>
-        {!available && (
+       <div className="w-full flex justify-end">
+       {!available && (
           <Button size="sm" className={`w-[200px] mt-4`} disabled={loading}>
             {loading && "Verificando..."}
             {!loading && !available && "Verificar disponibilidade"}
@@ -198,6 +197,7 @@ function DashboardVisit() {
             Agendar?
           </Button>
         )}
+       </div>
       </form>
     </div>
   );
