@@ -33,7 +33,7 @@ import { v4 } from "uuid";
 import { toast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress";
 
-const empresas = [
+export const empresas = [
   { id: 0, razaoSocial: "Nenhum" },
   { id: 1, razaoSocial: "MAKE LOCAÇÕES" },
   { id: 2, razaoSocial: "RESIDENCIAL TREVISO" },
@@ -61,28 +61,33 @@ const empresas = [
 export function InserirCompromisso({ children }) {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [pay, setPay] = useState(false);
   const ref = useRef();
 
   const { handleSubmit, register, reset, setValue } = useForm();
 
   const onSubmit = async (data) => {
+    console.log(data);
     data.id = v4();
     setLoading(true);
+    
     let dataFile = data.file[0];
     let newFileName = uid(32);
     let renamedFile = new File([dataFile], newFileName, {
       type: dataFile.type,
     });
     data.file = renamedFile;
+    data.status = pay;
 
+    // Garantir que a data está sendo convertida corretamente
     const dateObj = new Date(data.expiredDate);
     const dia = String(dateObj.getDate()).padStart(2, "0");
     const mes = String(dateObj.getMonth() + 1).padStart(2, "0");
     const ano = dateObj.getFullYear();
-    data.expiredDate = `${dia}/${mes}/${ano}`;
-    const formattedDate = new Date(data.expiredDate);
-    data.expiredDate = formattedDate;
-    data.user = auth.currentUser?.email;
+    data.expiredDate = `${dia}-${mes}-${ano}`;
+
+    data.user = auth.currentUser?.displayName;
+
     const contentType = data.file.type;
     try {
       const referenciaCompromisso = databaseRef(
@@ -93,7 +98,6 @@ export function InserirCompromisso({ children }) {
         storage,
         `/compromissos/${data.file.name}`
       );
-
       const uploadTask = uploadBytesResumable(
         referenciaStorage,
         data.file,
@@ -133,6 +137,7 @@ export function InserirCompromisso({ children }) {
       });
     }
   };
+
 
   return (
     <Sheet>
@@ -204,7 +209,7 @@ export function InserirCompromisso({ children }) {
             </div>
             <div className="flex justify-between">
               <Label>Status - Pago?</Label>
-              <Checkbox {...register("status")} />
+              <Checkbox checked={pay} onCheckedChange={(e) => setPay(!pay)} />
             </div>
             <div className="pt-4 flex justify-end">
               {!loading ? (
