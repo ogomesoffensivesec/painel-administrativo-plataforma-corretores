@@ -13,9 +13,15 @@ import {
   CurrencyIcon,
   DollarSignIcon,
   FileIcon,
+  Files,
+  FolderArchive,
   HomeIcon,
   LogOut,
   Pencil,
+  PlusCircle,
+  PlusIcon,
+  Sheet,
+  ShieldCheckIcon,
   ShoppingBag,
   ShoppingCart,
   Users,
@@ -79,54 +85,16 @@ function ListSideBar({ userFake }) {
       href: "/dashboard",
     },
     {
-      text: "Imóveis",
-      icon: <Building2 className="w-6 h-6" />,
-      selected: segment === "imoveis" ? true : false,
-      href: "/dashboard/imoveis",
-    },
-    {
-      text: "Empreendimentos",
-      icon: <ArrowLeftRight className="w-6 h-6" />,
-      selected: segment === "empreendimentos" ? true : false,
-
-      href: "/dashboard/empreendimentos",
-    },
-    {
-      text: "Empresas",
-      icon: <BetweenHorizonalEnd className="w-6 h-6" />,
-      selected: segment === "empresas" ? true : false,
-      href: "/dashboard/empresas",
-    },
-    {
-      text: "Corretores",
-      icon: <Users className="w-6 h-6" />,
-      selected: segment === "corretores" ? true : false,
-
-      href: "/dashboard/corretores",
-    },
-    {
-      text: "Visitas",
-      icon: <CalendarCheck className="w-6 h-6" />,
-      selected: segment === "visitas" ? true : false,
-      href: "/dashboard/visitas",
-    },
-    {
-      text: "Certificados",
-      icon: <FileIcon className="w-6 h-6" />,
-      selected: segment === "certificados" ? true : false,
-      href: "/dashboard/certificados",
-    },
-    {
-      text: "Chamados",
-      icon: <Bell className="w-6 h-6" />,
-      selected: segment === "chamados-ocorrencias" ? true : false,
-      href: "/dashboard/chamados-ocorrencias",
+      text: "Cadastros",
+      icon: <PlusCircle className="w-6 h-6" />,
+      selected: segment === "cadastros" ? true : false,
+      href: "/dashboard/cadastros",
     },
     {
       text: "Compras",
       icon: <ShoppingCart className="w-6 h-6" />,
-      selected: segment === "pedidos-e-compras" ? true : false,
-      href: "/dashboard/pedidos-e-compras",
+      selected: segment === "compras" ? true : false,
+      href: "/dashboard/compras",
     },
     {
       text: "Financeiro",
@@ -134,6 +102,32 @@ function ListSideBar({ userFake }) {
       selected: segment === "financeiro" ? true : false,
       href: "/dashboard/financeiro",
     },
+    {
+      text: "Contabilidade",
+      icon: <Sheet className="w-6 h-6" />,
+      selected: segment === "contabilidade" ? true : false,
+      href: "/dashboard/contabilidade",
+    },
+    {
+      text: "Comercial",
+      icon: <FolderArchive className="w-6 h-6" />,
+      selected: segment === "comercial" ? true : false,
+      href: "/dashboard/comercial",
+    },
+    {
+      text: "Drive",
+      icon: <Files className="w-6 h-6" />,
+      selected: segment === "drive" ? true : false,
+      href: "/dashboard/drive",
+    },
+    {
+      text: "Garantias",
+      icon: <ShieldCheckIcon className="w-6 h-6" />,
+      selected: segment === "garantias" ? true : false,
+      href: "/dashboard/garantias",
+    },
+   
+  
   ];
   return (
     <>

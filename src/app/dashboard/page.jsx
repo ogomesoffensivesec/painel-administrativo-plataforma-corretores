@@ -9,16 +9,14 @@ import {
 } from "@/components/ui/popover";
 import useAuth from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import EmpreendimentoCard from "@/components/dashboard/dashboard.card.empreendimento";
 import VisitasCard from "@/components/dashboard/dashboard.card.visitas";
 import { auth } from "@/database/config/firebase";
 import SetUserDisplayName from "@/components/dashboard/dashboard.user.displayname";
 import { UsersProvider } from "@/contexts/user.context";
-import Imoveis from "./imoveis/page";
 import ImoveisCard from "@/components/dashboard/dashboard.card.imovel";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ChamadosDashboard } from "@/components/dashboard/dashboard-chamados-count";
 
 export default function Home() {
   const { user, openDialogVerifyUser, setOpenDialogVerifyUser } = useAuth();
@@ -50,9 +48,9 @@ export default function Home() {
         <SetUserDisplayName
           open={openDialogVerifyUser}
           setOpenDialogVerifyUser={setOpenDialogVerifyUser}
-        />
+        />a
         <div className="w-full flex justify-between  gap-3 md:gap-4 lg:gap-3 flex-wrap">
-          {" "}
+       
           <div className="flex gap-3">
             <EmpreendimentoCard />
             <ImoveisCard />

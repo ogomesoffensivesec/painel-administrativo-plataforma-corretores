@@ -12,7 +12,6 @@ import { CertificatesTable } from "./_components/table-certificates";
 const queryClient = new QueryClient();
 export default function Page() {
   const [user] = useAuthState(auth);
-
   const router = useRouter();
 
   useEffect(() => {
@@ -20,21 +19,22 @@ export default function Page() {
       router.push("/");
     }
   }, [user, router]);
+
   return (
     <Suspense>
       <UsersProvider>
         <QueryClientProvider client={queryClient}>
           <div className="w-full h-full dark:bg-stone-950 p-10">
             <div className="w-full mx-auto space-y-4">
-              <div className="flex items-center justify-end  gap-2">
-                {user && user.email === "desenvolvimento@ogcoder.com.br" && (
-                  <UpsertCert>Adicionar certificado</UpsertCert>
-                )}
-              </div>
-              <div className="p-6 w-full mx-auto space-y-4 ">
-                <span className="text-xl font-bold text-indigo-600 ">
-                  Consulta de certificados digitais tipo A1
-                </span>
+              <div className="p-6 w-full mx-auto space-y-4">
+                <div className="w-full flex justify-between items-center mb-10">
+                  <span className="text-xl font-bold text-indigo-600">
+                    Consulta de certificados digitais tipo A1
+                  </span>
+                  {user?.email === "desenvolvimento@ogcoder.com.br" && (
+                    <UpsertCert>Adicionar certificado</UpsertCert>
+                  )}
+                </div>
                 <CertificatesTable />
               </div>
             </div>

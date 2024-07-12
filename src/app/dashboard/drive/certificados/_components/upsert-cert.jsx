@@ -28,7 +28,7 @@ export function UpsertCert({ children }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button size="sm" ref={ref}>
+        <Button ref={ref}>
           {children}
         </Button>
       </SheetTrigger>

@@ -149,7 +149,7 @@ export function TabelaCompromissos() {
               </TableCell>
               <TableCell>{compromisso.description}</TableCell>
               <TableCell>{compromisso.business}</TableCell>
-              <TableCell>{compromisso.price}</TableCell>
+              <TableCell>R$ {compromisso.price}</TableCell>
               <TableCell>
                 {(() => {
                   const oldDate = compromisso.expiredDate;
