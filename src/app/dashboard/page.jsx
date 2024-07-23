@@ -48,7 +48,7 @@ export default function Home() {
         <SetUserDisplayName
           open={openDialogVerifyUser}
           setOpenDialogVerifyUser={setOpenDialogVerifyUser}
-        />a
+        />
         <div className="w-full flex justify-between  gap-3 md:gap-4 lg:gap-3 flex-wrap">
        
           <div className="flex gap-3">

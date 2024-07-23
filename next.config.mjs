@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  //output: 'export',
 
   env: {
     auth_token: '96e4706989fd7831006c78bff9dd15a2',
@@ -62,7 +61,5 @@ const nextConfig = {
     ],
   },
 };
-
-
 
 export default nextConfig;

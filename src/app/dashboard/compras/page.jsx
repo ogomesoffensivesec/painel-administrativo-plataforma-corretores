@@ -7,11 +7,9 @@ export default function Compras() {
   return (
     <div className="w-full h-screen">
       <TopBarMain>
-        <TopbarItem href="/dashboard/drive/certificados">
-          <FormInput className="h-4 w-4" />
+        <TopbarItem href="/dashboard/compras/pedidos-e-orcamentos">
           <span>Pedidos de compra</span>
         </TopbarItem>
-
       </TopBarMain>
     
     </div>
