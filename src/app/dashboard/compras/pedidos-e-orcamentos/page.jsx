@@ -46,46 +46,66 @@ import {
 } from "@/components/ui/table";
 import {
   BellIcon,
-  CheckIcon,
-  FilePenIcon,
   PlusIcon,
   TrashIcon,
-  XIcon,
   PrinterIcon,
   EyeIcon,
-  Search,
 } from "lucide-react";
-import { filterAllOrders } from "./_components/orders.functions";
+import {
+  createOrder,
+  deleteOrder,
+  updateStatusOrder,
+} from "./_components/orders.functions";
+import { toast } from "@/components/ui/use-toast";
+import { database } from "@/database/config/firebase";
+import { off, onValue, ref } from "firebase/database";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 const useOrders = () => {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true);
-      try {
-        const orders = await filterAllOrders();
-        const formattedData = Object.values(orders[0]).map((order) => ({
+    const ordersRef = ref(database, `/orders/`);
+
+    const handleDataChange = (snapshot) => {
+      if (snapshot.val()) {
+        const orders = snapshot.val(); // Obtém os dados em tempo real
+        const formattedData = Object.values(orders).map((order) => ({
+          username: order.username,
           build: order.build,
+          userId: order.userId,
           createAt: order.createAt,
           id: order.id,
           items: JSON.stringify(order.items),
           status: order.status,
-          cancelRequests: order.cancelRequests
-            ? JSON.stringify(order.cancelRequests)
-            : null,
+          cancelRequests: order.cancelRequests ? order.cancelRequests : null,
         }));
+
+        formattedData.sort(
+          (a, b) => new Date(a.createAt) - new Date(b.createAt)
+        );
         setPedidos(formattedData);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     };
 
-    fetchOrders();
-  }, []);
+    // Configura o listener para mudanças em tempo real
+    onValue(ordersRef, handleDataChange, { onlyOnce: false });
+
+    // Cleanup function para remover o listener quando o componente for desmontado
+    return () => {
+      off(ordersRef, "value", handleDataChange);
+    };
+  }, []); // Dependência vazia para executar apenas uma vez
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return { pedidos, loading, setPedidos };
 };
@@ -159,30 +179,46 @@ const FilterBar = ({ handleFilterChange, clearFilters }) => (
   </div>
 );
 
-const PedidoTable = ({ pedidos, handleStatusChange }) => (
+const PedidoTable = ({
+  pedidos,
+  handleStatusChange,
+  formatDate,
+  handleCancelOrderByRequest,
+  loadState,
+}) => (
   <Table>
     <TableHeader>
       <TableRow>
+        <TableHead>Usuário</TableHead>
         <TableHead>Endereço de Obra</TableHead>
         <TableHead>Quantidade de Itens</TableHead>
         <TableHead>Data de Criação</TableHead>
-        <TableHead>Status</TableHead>
-        <TableHead>Ações</TableHead>
+        <TableHead className="w-[250px]">Status</TableHead>
+        <TableHead className="text-center">Ações</TableHead>
       </TableRow>
     </TableHeader>
     <TableBody>
-      {pedidos.map((pedido, index) => (
-        <TableRow key={index}>
+      {pedidos.map((pedido) => (
+        <TableRow key={pedido.id}>
+          <TableCell>{pedido.username}</TableCell>
           <TableCell>{pedido.build}</TableCell>
+          <TableCell>{formatDate(pedido.createAt)}</TableCell>
           <TableCell>{pedido.items?.length}</TableCell>
-          <TableCell>{pedido.createAt}</TableCell>
           <TableCell>
             <Select
               value={pedido.status}
-              onValueChange={(value) => handleStatusChange(index, value)}
+              onValueChange={(value) => handleStatusChange(pedido.id, value)}
             >
               <SelectTrigger>
-                <SelectValue>{pedido.status}</SelectValue>
+                <SelectValue>
+                  {pedido.status === "em_transito" && "Em trânsito"}
+                  {pedido.status === "entregue" && "Entregue"}
+                  {pedido.status === "cancelado" && "Cancelado"}
+                  {pedido.status === "aguardando_aprovacao" &&
+                    "Aguardando aprovação"}
+                  {pedido.status === "enviado_fornecedor" &&
+                    "Enviando fornecedor"}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="aguardando_aprovacao">
@@ -197,7 +233,7 @@ const PedidoTable = ({ pedidos, handleStatusChange }) => (
               </SelectContent>
             </Select>
           </TableCell>
-          <TableCell>
+          <TableCell className="flex items-center justify-center gap-3">
             <DropdownMenu>
               <DropdownMenuTrigger className="bg-indigo-600 dark:bg-indigo-500/80 text-white py-2 rounded-md shadow-md w-auto px-5">
                 Opções
@@ -205,15 +241,7 @@ const PedidoTable = ({ pedidos, handleStatusChange }) => (
               <DropdownMenuContent align="end" className="w-80">
                 <DropdownMenuLabel>Ações</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center gap-2 text-zinc-500"
-                  >
-                    <TrashIcon className="h-4 w-4 text-red-500" />
-                    <span className="text-red-400">Cancelar Pedido</span>
-                  </Button>
-                </DropdownMenuItem>
+               
                 <DropdownMenuItem>
                   <Button
                     variant="ghost"
@@ -243,6 +271,45 @@ const PedidoTable = ({ pedidos, handleStatusChange }) => (
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            {pedido.cancelRequests && (
+              <div className="flex items-center justify-center p-2 bg-destructive rounded-md shadow-md">
+                <HoverCard>
+                  <HoverCardTrigger className="hover:cursor-pointer">
+                    <ExclamationTriangleIcon className="text-white h-5 w-5" />
+                  </HoverCardTrigger>
+                  <HoverCardContent className="space-y-2">
+                    <span className="font-semibold text-zinc-800">
+                      Pedido de cancelamento!
+                    </span>
+                    <div>
+                      <span className="font-medium text-zinc-800">
+                        Usuário:
+                      </span>{" "}
+                      {""}
+                      <span>{pedido.username}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-zinc-800">
+                        Solicitado em:
+                      </span>{" "}
+                      {""}
+                      <span>
+                        {formatDate(pedido?.cancelRequests.createdAt)}
+                      </span>
+                      <Button
+                        size="sm"
+                        disabled={loadState}
+                        className="mt-2"
+                        variant="destructive"
+                        onClick={() => handleCancelOrderByRequest(pedido.id)}
+                      >
+                        {loadState ? "Cancelando pedido..." : "Cancelar pedido"}
+                      </Button>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+              </div>
+            )}
           </TableCell>
         </TableRow>
       ))}
@@ -252,180 +319,207 @@ const PedidoTable = ({ pedidos, handleStatusChange }) => (
 
 export default function PedidosOrcamentos() {
   const { pedidos, loading, setPedidos } = useOrders();
+  const [loadState, setLoadState] = useState(false);
   const { filters, handleFilterChange, clearFilters } = useFilters();
   const [items, setItems] = useState([]);
+  const [obraSelecionada, setObraSelecionada] = useState("");
   const [newItem, setNewItem] = useState({
     description: "",
     quantity: 0,
     type: "",
   });
 
-  const handleStatusChange = (index, value) => {
-    const updatedPedidos = [...pedidos];
-    updatedPedidos[index].status = value;
-    setPedidos(updatedPedidos);
+  const handleStatusChange = async (id, value) => {
+    try {
+      const updatedOrder = await updateStatusOrder(id, value);
+      if (!updatedOrder) {
+        const updatedPedidos = pedidos.map((pedido) =>
+          pedido.id === id ? { ...pedido, status: value } : pedido
+        );
+        setPedidos(updatedPedidos);
+        toast({
+          title: "Status atualizado com sucesso!",
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao atualizar status!",
+        description: "Por favor, tente novamente.",
+      });
+    }
+  };
+
+  const handleCreateOrder = async () => {
+    const newOrder = {
+      build: obraSelecionada,
+      items: JSON.stringify(items),
+    };
+
+    try {
+      const response = await createOrder(newOrder);
+      if (!response) {
+        setPedidos((prevPedidos) => [...prevPedidos, response.data]);
+        toast({
+          title: "Pedido criado com sucesso!",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao criar pedido!",
+        description: "Por favor, tente novamente.",
+      });
+    }
   };
 
   const filteredPedidos = pedidos.filter(
     (pedido) =>
-      (filters.user === "" || pedido.user === filters.user) &&
-      (filters.build === "" || pedido.build === filters.build) &&
-      (filters.status === "" || pedido.status === filters.status)
+      (!filters.user || pedido.user === filters.user) &&
+      (!filters.build || pedido.build === filters.build) &&
+      (!filters.status || pedido.status === filters.status)
   );
-
-  const addItem = () => {
-    setItems([...items, newItem]);
-    setNewItem({ description: "", quantity: 0, type: "" });
+  const formatDate = (dateString) => {
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
   };
 
-  const updateItem = (index, field, value) => {
-    const updatedItems = [...items];
-    updatedItems[index][field] = value;
-    setItems(updatedItems);
+  const handleCancelOrderByRequest = async (orderId) => {
+    setLoadState(true);
+    const response = await updateStatusOrder(orderId, 'cancelado');
+    if (response) {
+      toast({
+        title: "Erro ao cancelar pedido",
+        variant: "destructive",
+      });
+      console.error(response);
+      setLoadState(false);
+      return;
+    }
+    toast({
+      title: "Pedido cancelado com sucesso!",
+      variant: "destructive",
+    });
+    setLoadState(false);
   };
 
-  const removeItem = (index) => {
-    const updatedItems = items.filter((_, i) => i !== index);
-    setItems(updatedItems);
-  };
   return (
     <Card>
-      <div className="border-b border-muted pb-4">
-        <CardHeader className="px-0 py-0">
-          <div className="flex  py-6 px-10  border-b-zinc-300  border-[1px] items-center justify-between">
-            <div className="  w-full">
-              <CardTitle>Pedidos de Obra</CardTitle>
-              <CardDescription>
-                Listagem completa de pedidos realizados
-              </CardDescription>
-            </div>
-            <Dialog>
-              <DialogTrigger className="bg-indigo-600 dark:bg-indigo-500/80 text-white py-2 rounded-md shadow-md px-2 w-[170px] flex items-center justify-center gap-2">
-                <PlusIcon className="w-4 h-4" />
-                <span className="text-sm">Adicionar Pedido</span>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Adicionar Pedido</DialogTitle>
-                  <DialogDescription>
-                    Preencha as informações para adicionar um novo pedido
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="items">Itens</Label>
-                    <ul className="grid gap-4">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div>
+            Pedidos de compra
+            <CardDescription>
+              Gerencie seus pedidos de compra e orçamentos.
+            </CardDescription>
+          </div>
+          <Dialog>
+            <DialogTrigger className="bg-indigo-600 hover:bg-indigo-400 px-3 py-2  text-white rounded-md flex items-center justify-center text-sm">
+              <PlusIcon className="mr-2 h-4 w-4" /> Criar Pedido
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[625px]">
+              <DialogHeader>
+                <DialogTitle>Criar Novo Pedido</DialogTitle>
+                <DialogDescription>
+                  Preencha as informações abaixo para criar um novo pedido.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-2 pb-4">
+                <div className="space-y-2">
+                  <Label>Endereço da Obra</Label>
+                  <Select onValueChange={(value) => setObraSelecionada(value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione a obra" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="donateka">Donateka</SelectItem>
+                      <SelectItem value="sanmake">San Make</SelectItem>
+                      <SelectItem value="bruce">Residencial Bruce</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Adicionar Itens</Label>
+                  <div className="space-y-2">
+                    <Input
+                      type="text"
+                      placeholder="Descrição do Item"
+                      value={newItem.description}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, description: e.target.value })
+                      }
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Quantidade"
+                      value={newItem.quantity}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, quantity: +e.target.value })
+                      }
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Tipo de Item"
+                      value={newItem.type}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, type: e.target.value })
+                      }
+                    />
+                    <Button
+                      onClick={() => {
+                        setItems([...items, newItem]);
+                        setNewItem({ description: "", quantity: 0, type: "" });
+                      }}
+                    >
+                      Adicionar Item
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Itens Adicionados</Label>
+                    <ul>
                       {items.map((item, index) => (
-                        <li
-                          key={index}
-                          className="flex items-center justify-between"
-                        >
-                          <div>
-                            <div className="font-medium">
-                              {item.description}
-                            </div>
-                            <div className="text-muted-foreground">
-                              Quantidade: {item.quantity} | Tipo: {item.type}
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() =>
-                                updateItem(index, "description", "Edited Item")
-                              }
-                            >
-                              <FilePenIcon className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                removeItem(index);
-                                DialogClose.current.click();
-                              }}
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </li>
+                        <li key={index}>{item.description}</li>
                       ))}
-                      <li className="flex items-center justify-between w-full">
-                        <div className="grid gap-2 w-full mr-8">
-                          <Input
-                            placeholder="Descrição do item"
-                            value={newItem.description}
-                            onChange={(e) =>
-                              setNewItem({
-                                ...newItem,
-                                description: e.target.value,
-                              })
-                            }
-                          />
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              placeholder="Quantidade"
-                              value={newItem.quantity}
-                              onChange={(e) =>
-                                setNewItem({
-                                  ...newItem,
-                                  quantity: parseInt(e.target.value),
-                                })
-                              }
-                              className="w-16"
-                            />
-                            <Input
-                              placeholder="Tipo"
-                              value={newItem.type}
-                              onChange={(e) =>
-                                setNewItem({ ...newItem, type: e.target.value })
-                              }
-                            />
-                          </div>
-                        </div>
-                        <Button variant="outline" size='sm' onClick={addItem}>
-                          <PlusIcon className="h-4 w-4" /> Adicionar
-                        </Button>
-                      </li>
                     </ul>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="build">Obra</Label>
-                    <Input id="build" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="createAt">Data de Criação</Label>
-                    <Input id="createAt" type="date" />
-                  </div>
                 </div>
-                <DialogFooter>
-                  <Button type="submit">
-                    <CheckIcon className="h-4 w-4 mr-2" />
-                    Criar Pedido
-                  </Button>
-                  <DialogClose className="flex items-center justify-center text-sm">
-                    <XIcon className="h-4 w-4 mr-2" />
+              </div>
+              <DialogFooter>
+                <DialogClose>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setItems([]);
+                      setNewItem({ description: "", quantity: 0, type: "" });
+                    }}
+                  >
                     Cancelar
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-      </div>
-      <CardContent className="px-5 py-1">
-        <div className="rounded-md p-5">
-          <FilterBar
-            handleFilterChange={handleFilterChange}
-            clearFilters={clearFilters}
-          />
+                  </Button>
+                </DialogClose>
+                <Button onClick={handleCreateOrder}>Salvar</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col">
+        <FilterBar
+          handleFilterChange={handleFilterChange}
+          clearFilters={clearFilters}
+        />
+        {loading ? (
+          <div>Carregando...</div>
+        ) : (
           <PedidoTable
             pedidos={filteredPedidos}
             handleStatusChange={handleStatusChange}
+            formatDate={formatDate}
+            handleCancelOrderByRequest={handleCancelOrderByRequest}
+            loadState={loadState}
           />
-        </div>
+        )}
       </CardContent>
     </Card>
   );
